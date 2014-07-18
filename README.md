@@ -15,8 +15,8 @@ Installation
 Compilation
 -----------
 - Install [npm](http://nodejs.org/) and [gulp](http://gulpjs.com/)
-- Install dependencies 
-- type [gulp](http://gulpjs.com/) to compile
+- `npm install`
+- `gulp`
 
 
 
@@ -25,63 +25,46 @@ Compilation
   
 ###Read the current sessions user id
 ```js
-
-    jQuery.LIMO.session.user.id;
-    
+    jQuery.LIMO.session.user.id;    
 ```
 
 ###Read the current session user name
 ```js
-
-    jQuery.LIMO.session.user.name;
-            
+    jQuery.LIMO.session.user.name;            
 ```
 
 ###Check if the current user is logged in
 ```js
-
-    jQuery.LIMO.session.user.isLoggedIn();
-    
+    jQuery.LIMO.session.user.isLoggedIn();    
 ```
 
 ###Get the current view code
 ```js
-
     jQuery.LIMO.session.view.name;
-
 ```
 
 ###Is the current view in full display mode
 ```js
-
-    jQuery.LIMO.session.view.isFullDisplay();
-    
+    jQuery.LIMO.session.view.isFullDisplay();    
 ```
 
 ###Get the record id of the 6th field
 ```js
-
-    jQuery.LIMO.records[5].id;
-    
+    jQuery.LIMO.records[5].id;    
 ```
 
 ###Get the PNX data as text of the 6th record
 ```js
-
-    jQuery.LIMO.records[5].getPNX('text');
-    
+    jQuery.LIMO.records[5].getPNX('text');    
 ```
 
 ###Get the material type of the first record
 ```js
-
     jQuery.LIMO.records[0].getData().display.type
-
 ```
 
 ###Highlight all journals on screen
 ```js
-
       jQuery.LIMO.records.each(
         function(){ 
             if (this.getData().display.type === 'journal') {
@@ -93,7 +76,6 @@ Compilation
 
 ###Make the 'View Online' tab popout
 ```js
-
     jQuery.LIMO.records.each(
         function(index, record){
             var view_online = record.tabs.getByName('viewOnline');
@@ -104,12 +86,10 @@ Compilation
             }
             
         }
-    );
-    
-
+    );    
 ```
 
-###Add a new tab to the 2nd record
+###Add a new tab to all records
 ```js
       jQuery.LIMO.records.each(
         function(index, record){
@@ -129,7 +109,6 @@ Compilation
       
 ### Add a new share tab and make the sendTo tab appear.
 ```js
-
     jQuery.LIMO.records.each(
         function(index, record){
             record.tabs.addTab('Share', {tooltip:'Share', state:'enabled', click:function (event, tab, record, options) {
@@ -167,8 +146,7 @@ Compilation
             }
         });
        }
-    );
-        
+    );        
 ```      
       
       
@@ -182,4 +160,4 @@ Compilation
 - Send a pull request.
       
 # License
-MIT (c) 2014 KULeuven/LIBIS      
+MIT (c) 2014 KULeuven/LIBIS written by Mehmet Celik     

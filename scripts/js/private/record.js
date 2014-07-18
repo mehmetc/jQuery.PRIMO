@@ -65,7 +65,7 @@ var _getPNXData = function (recordID, type) {
             type: 'get',
             dataType: 'xml',
             //url: '/primo_library/libweb/showPNX.jsp?id=' + recordIndex,
-            url: '/primo_library/libweb/action/display.do?vid=KULeuven&showPnx=true&doc=' + recordID,
+            url: '/primo_library/libweb/action/display.do?vid=KULeuven&showPnx=true&pds_handle=GUEST&doc=' + recordID,
             success: function (data, event, xhr) {
                 switch (type) {
                     case 'text':

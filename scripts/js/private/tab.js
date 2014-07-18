@@ -42,7 +42,7 @@ function _tab(record, i) {
             return jQuery(tab).hasClass('EXLResultSelectedTab');
         };
         tab.close = function () {
-            if (!jQuery.PRIMO.isFullDisplay()) {
+            if (!jQuery.PRIMO.session.view.isFullDisplay()) {
                 record.find('.EXLResultSelectedTab').removeClass('EXLResultSelectedTab');
                 record.find('.EXLTabsRibbon').addClass('EXLTabsRibbonClosed');
                 tab.container.hide();

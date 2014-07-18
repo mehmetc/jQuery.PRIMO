@@ -113,7 +113,7 @@ function _materialType(record) {
 
 function _getGetIt(record){
     var getIt = [];
-    var view_online = record.tabs.getByName('viewOnline');
+    var view_online = record.tabs.getByName('ViewOnline');
     var url = '';
 
     if (view_online && view_online.length > 0){

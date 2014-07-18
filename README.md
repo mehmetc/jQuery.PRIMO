@@ -33,47 +33,47 @@ Compilation  (TODO)
   
 ###Read the current sessions user id
 ```js
-    jQuery.LIMO.session.user.id;    
+    jQuery.PRIMO.session.user.id;    
 ```
 
 ###Read the current session user name
 ```js
-    jQuery.LIMO.session.user.name;            
+    jQuery.PRIMO.session.user.name;            
 ```
 
 ###Check if the current user is logged in
 ```js
-    jQuery.LIMO.session.user.isLoggedIn();    
+    jQuery.PRIMO.session.user.isLoggedIn();    
 ```
 
 ###Get the current view code
 ```js
-    jQuery.LIMO.session.view.name;
+    jQuery.PRIMO.session.view.name;
 ```
 
 ###Is the current view in full display mode
 ```js
-    jQuery.LIMO.session.view.isFullDisplay();    
+    jQuery.PRIMO.session.view.isFullDisplay();    
 ```
 
 ###Get the record id of the 6th field
 ```js
-    jQuery.LIMO.records[5].id;    
+    jQuery.PRIMO.records[5].id;    
 ```
 
 ###Get the PNX data as text of the 6th record
 ```js
-    jQuery.LIMO.records[5].getPNX('text');    
+    jQuery.PRIMO.records[5].getPNX('text');    
 ```
 
 ###Get the material type of the first record
 ```js
-    jQuery.LIMO.records[0].getData().display.type
+    jQuery.PRIMO.records[0].getData().display.type
 ```
 
 ###Highlight all journals on screen
 ```js
-      jQuery.LIMO.records.each(
+      jQuery.PRIMO.records.each(
         function(){ 
             if (this.getData().display.type === 'journal') {
                 this.css('background-color', 'yellow')
@@ -84,11 +84,11 @@ Compilation  (TODO)
 
 ###Make the 'View Online' tab popout
 ```js
-    jQuery.LIMO.records.each(
+    jQuery.PRIMO.records.each(
         function(index, record){
-            var view_online = record.tabs.getByName('viewOnline');
+            var view_online = record.tabs.getByName('ViewOnline');
             try{
-                view_online.attr('target', '_blank').attr('href', record.getIt1);                          
+                view_online.find('a').attr('target', '_blank').attr('href', record.getIt1);                          
             } catch (e) {
                 console.log('Error setting url');
             }
@@ -99,7 +99,7 @@ Compilation  (TODO)
 
 ###Add a new tab to all records
 ```js
-      jQuery.LIMO.records.each(
+      jQuery.PRIMO.records.each(
         function(index, record){
           record.tabs.addTab('Hello World',{
             state:'enabled', 
@@ -111,13 +111,13 @@ Compilation  (TODO)
                     }
                   }	
           });          
-        };
+        }
       );
 ```      
       
 ### Add a new share tab and make the sendTo tab appear.
 ```js
-    jQuery.LIMO.records.each(
+    jQuery.PRIMO.records.each(
         function(index, record){
             record.tabs.addTab('Share', {tooltip:'Share', state:'enabled', click:function (event, tab, record, options) {
                 if (tab.isOpen()) {

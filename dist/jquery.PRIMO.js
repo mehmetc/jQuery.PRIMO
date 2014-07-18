@@ -122,7 +122,7 @@ function _materialType(record) {
 
 function _getGetIt(record){
     var getIt = [];
-    var view_online = record.tabs.getByName('viewOnline');
+    var view_online = record.tabs.getByName('ViewOnline');
     var url = '';
 
     if (view_online && view_online.length > 0){
@@ -176,7 +176,7 @@ function _tab(record, i) {
             return jQuery(tab).hasClass('EXLResultSelectedTab');
         };
         tab.close = function () {
-            if (!jQuery.PRIMO.isFullDisplay()) {
+            if (!jQuery.PRIMO.session.view.isFullDisplay()) {
                 record.find('.EXLResultSelectedTab').removeClass('EXLResultSelectedTab');
                 record.find('.EXLTabsRibbon').addClass('EXLTabsRibbonClosed');
                 tab.container.hide();

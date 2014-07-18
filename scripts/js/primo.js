@@ -38,7 +38,7 @@
  * "KULeuven"
  *
  */
-jQuery.LIMO = {
+jQuery.PRIMO = {
     session: {
         view: {
             frontEndID: (function () {

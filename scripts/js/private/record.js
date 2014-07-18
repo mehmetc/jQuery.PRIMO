@@ -19,14 +19,16 @@ function _record(i) {
      * */
     var record = jQuery(jQuery('.EXLResult')[i]);
 
-
+// attributes
     record.index = i;
     record.id = record.find('.EXLResultRecordId[name]').attr('name');
     record.title = record.find('.EXLResultTitle').text().trim();
     record.openUrl = record.find('.EXLMoreTab a').attr('href');
-    record.isRemoteRecord = (record.id.substring(0, 2) === 'TN');
     record.tabs = _tabs(record);
     record.getIt1 = _getGetIt(record); // needs tabs
+
+// methods
+    record.isRemoteRecord = function(){ return (record.id.substring(0, 2) === 'TN')};
 
     record.getData = function(){
         if(!recordData){

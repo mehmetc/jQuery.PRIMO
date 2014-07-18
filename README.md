@@ -1,18 +1,26 @@
 jQuery.PRIMO
 ============
 
-A client side convenience library for PRIMO.
+A client side convenience library for PRIMO v4.6 or better.
 
 
-Installation
+Installation  (TODO)
 ------------
+You can inject the script into your results page, for testing. This works best using Firefox.
+Do a search and open the JavaScript console and paste the next line.
+
+    `$.getScript('https://raw.githubusercontent.com/mehmetc/jQuery.PRIMO/master/dist/jquery.PRIMO.js')`
+
+If you get strange errors just copy the complete source into your console.    
+    
+If want a more permanent solution: 
 - Use the 'File Uploader' on the backend to copy `dist/jquery.PRIMO.min.js` to your PRIMO server.     
 - Add a custom tile to the end of your customized layout set using the 'Views Wizard'. Do this for the 3 pages(home, brief, full).
   The content of the custom tile must include
     <script type='text/javascript' src='/primo_library/libweb/uploaded_files/YOUR_VID/jquery.PRIMO.min.js'></script>
   Change YOUR_VID into the VID you selected in the 'File Uploader'
 
-Compilation
+Compilation  (TODO)
 -----------
 - Install [npm](http://nodejs.org/) and [gulp](http://gulpjs.com/)
 - `npm install`

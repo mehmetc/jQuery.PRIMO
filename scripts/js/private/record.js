@@ -65,17 +65,22 @@ var _getPNXData = function (recordID, type) {
             type: 'get',
             dataType: 'xml',
             //url: '/primo_library/libweb/showPNX.jsp?id=' + recordIndex,
-            url: '/primo_library/libweb/action/display.do?vid=KULeuven&showPnx=true&pds_handle=GUEST&doc=' + recordID,
+            url: '/primo_library/libweb/action/display.do?vid=' + jQuery.PRIMO.session.view.name + '&showPnx=true&pds_handle=GUEST&doc=' + recordID,
             success: function (data, event, xhr) {
-                switch (type) {
-                    case 'text':
-                        pnx = _xml2text(data);
-                        break;
-                    case 'json':
-                        pnx = $(_xml2json(data));
-                        break;
-                    default:
-                        pnx = $(data);
+
+                if (xhr.getResponseHeader('Content-Type').search(/xml/) >= 0) {
+                    switch (type) {
+                        case 'text':
+                            pnx = _xml2text(data);
+                            break;
+                        case 'json':
+                            pnx = $(_xml2json(data));
+                            break;
+                        default:
+                            pnx = $(data);
+                    }
+                } else {
+                    alert('PDS redirect detected. Do not know how to handle that, yet.');
                 }
             }
         });

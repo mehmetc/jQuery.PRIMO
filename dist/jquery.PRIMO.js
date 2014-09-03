@@ -34,9 +34,15 @@ function _record(i) {
     record.title = record.find('.EXLResultTitle').text().trim();
     record.openUrl = record.find('.EXLMoreTab a').attr('href');
     record.tabs = _tabs(record);
-    record.getIt1 = _getGetIt(record); // needs tabs
+
+
 
 // methods
+    record.getIt1 = function(){ return _getGetIt(record);} // needs tabs
+
+
+    record.getDedupedRecordIds =  function(){ return _getRecordIdInDedupRecord(record.id).data() };
+
     record.isRemoteRecord = function(){ return (record.id.substring(0, 2) === 'TN')};
 
     record.getData = function(){
@@ -109,6 +115,36 @@ function _getIsDedupRecord(id) {
     return id.search(/^dedupmrg/) != -1;
 };
 
+/**
+ * Private method to retrieve record id's of a deduped record
+ * @method _getRecordIdInDedupRecord
+ * @private
+ * @param {String} record id
+ * @returns {Array} list of record id's
+ */
+function _getRecordIdInDedupRecord(id) {
+    var dedupRecordIds = [];
+
+    return {
+        data: function(){
+            if (dedupRecordIds.length === 0){
+                if (_getIsDedupRecord(id)) {
+                    jQuery.ajax({
+                        async: false,
+                        type: 'get',
+                        dataType: 'json',
+                        data: {"id": id},
+                        url: '/primo_library/libweb/dedup_records_helper.jsp'
+                    }).done(function(data, textStatus, jqXHR){
+                        dedupRecordIds = data;
+                    });
+                }
+            }
+
+            return dedupRecordIds;
+        }
+    }
+}
 
 /**
  * Private method to retrieve the material type of a record.
@@ -323,7 +359,7 @@ function _addTab(tabName, options) {
     o.record.tabs = _tabs(o.record);
 }
 /**
- *
+ * Transform an XML document into JSON
  * @param {document} xml
  * @param {boolean} extended
  * @returns {object}
@@ -357,7 +393,7 @@ function _xml2json(xml, extended) {
                         if(cnv.match(/^\s+$/)){
                             /*DBG*/ //if(window.console) console.log(['x2j',nn,'node>c',cnn,'WHITE-SPACE (ignore)']);
                             return;
-                        };
+                        }
                         /*DBG*/ //if(window.console) console.log(['x2j',nn,'node>d',cnn,'TEXT']);
                         txt += cnv.replace(/^\s+/,'').replace(/\s+$/,'');
                         // make sure we ditch trailing spaces from markup
@@ -379,7 +415,7 @@ function _xml2json(xml, extended) {
                             /*DBG*/ //if(window.console) console.log(['x2j',nn,'node>g',cnn,'dig deeper...']);
                             obj[cnn] = parseXML(cn);
                         };
-                    };
+                    }
                 });
             };//node.childNodes.length>0
         };//node.childNodes
@@ -477,18 +513,19 @@ function _xml2json(xml, extended) {
 };
 
 /**
+ * Convert text to XML DOM
  *
  * @param {string} str - xml string
  * @returns {document} xmlDoc - xml document
  * @description borrowed from http://www.fyneworks.com/jquery/xml-to-json/
  * @private
  */
-// Convert text to XML DOM
 function _text2xml(str) {
     return $.parseXML(str);
 };
 
 /**
+ * Transform XML into text
  *
  * @param {document} xmlDoc - xml document
  * @returns {String}
@@ -506,6 +543,34 @@ function _xml2text(xmlDoc){
     }
     return xmlString;
 }
+
+/**
+ * Retrieves session data only available on the server
+ * @method
+ * @returns {Object} returns session data.
+ * @description Retrieves session data only available on the server
+ * @private
+ */
+var _getRemoteSessionData = (function() {
+      var remoteSession = null;
+      return {
+        data: function() {
+          if (!remoteSession) {
+            remoteSession = {};
+            jQuery.ajax({
+              async: false,
+              type: 'get',
+              dataType: 'json',
+              url: '/primo_library/libweb/remote_session_data_helper.jsp'
+            }).done(function(data, textStatus, jqXHR){
+                remoteSession = data;
+            });
+
+            return remoteSession;
+          }
+        }
+      }
+})();
 
 /**
  * Retrieves user id, name and if user is logged in
@@ -607,30 +672,17 @@ var _getFrontEndID = (function () {
  */
 jQuery.PRIMO = {
     session: {
-        view: {
-            frontEndID: (function () {
-                return _getFrontEndID.data();
-            }()),
-            name: (function(){
-                return getRequestParameterByName('vid');
-            })(),
-            language: '',
-            institution: {
-                name: {
-                    vid:'',
-                    ip:'',
-                    view:''
-                },
-                code: {
-                    vid:'',
-                    ip:'',
-                    view:''
-                }
-            },
-            isFullDisplay: function(){
-                return window.isFullDisplay();
-            }
-        },
+        view: (function () {
+            return $.extend({}, _getRemoteSessionData.data(),{
+                isFullDisplay: (function () {
+                    return window.isFullDisplay();
+                })(),
+
+                frontEndID: (function () {
+                    return _getFrontEndID.data();
+                }())
+            });
+        })(),
         user: {
             id: _getUserInfo.data().id,
             name: _getUserInfo.data().name,
@@ -639,7 +691,9 @@ jQuery.PRIMO = {
                 name: ''
             },
             isOnCampus: '',
-            isLoggedIn: function(){return _getUserInfo.data().loggedIn;}
+            isLoggedIn: function () {
+                return _getUserInfo.data().loggedIn;
+            }
         }
 
     },
@@ -652,8 +706,5 @@ jQuery.PRIMO = {
         return $(data);
     }())
 };
-
-
-
 
 })(jQuery);

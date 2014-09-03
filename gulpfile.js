@@ -9,7 +9,7 @@ var jsdoc       = require("gulp-jsdoc");
 var del         = require('del');
 
 var paths = {
-    scripts: ['scripts/js/header.js', 'scripts/js/private/**/*.js', 'scripts/js/primo.js']
+    scripts: ['scripts/client/js/header.js', 'scripts/client/js/private/**/*.js', 'scripts/client/js/primo.js']
 };
 
 gulp.task('clean', function(cb) {

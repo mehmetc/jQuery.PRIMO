@@ -1,5 +1,5 @@
 /**
- *
+ * Transform an XML document into JSON
  * @param {document} xml
  * @param {boolean} extended
  * @returns {object}
@@ -33,7 +33,7 @@ function _xml2json(xml, extended) {
                         if(cnv.match(/^\s+$/)){
                             /*DBG*/ //if(window.console) console.log(['x2j',nn,'node>c',cnn,'WHITE-SPACE (ignore)']);
                             return;
-                        };
+                        }
                         /*DBG*/ //if(window.console) console.log(['x2j',nn,'node>d',cnn,'TEXT']);
                         txt += cnv.replace(/^\s+/,'').replace(/\s+$/,'');
                         // make sure we ditch trailing spaces from markup
@@ -55,7 +55,7 @@ function _xml2json(xml, extended) {
                             /*DBG*/ //if(window.console) console.log(['x2j',nn,'node>g',cnn,'dig deeper...']);
                             obj[cnn] = parseXML(cn);
                         };
-                    };
+                    }
                 });
             };//node.childNodes.length>0
         };//node.childNodes
@@ -153,18 +153,19 @@ function _xml2json(xml, extended) {
 };
 
 /**
+ * Convert text to XML DOM
  *
  * @param {string} str - xml string
  * @returns {document} xmlDoc - xml document
  * @description borrowed from http://www.fyneworks.com/jquery/xml-to-json/
  * @private
  */
-// Convert text to XML DOM
 function _text2xml(str) {
     return $.parseXML(str);
 };
 
 /**
+ * Transform XML into text
  *
  * @param {document} xmlDoc - xml document
  * @returns {String}

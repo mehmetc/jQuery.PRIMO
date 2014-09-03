@@ -40,30 +40,17 @@
  */
 jQuery.PRIMO = {
     session: {
-        view: {
-            frontEndID: (function () {
-                return _getFrontEndID.data();
-            }()),
-            name: (function(){
-                return getRequestParameterByName('vid');
-            })(),
-            language: '',
-            institution: {
-                name: {
-                    vid:'',
-                    ip:'',
-                    view:''
-                },
-                code: {
-                    vid:'',
-                    ip:'',
-                    view:''
-                }
-            },
-            isFullDisplay: function(){
-                return window.isFullDisplay();
-            }
-        },
+        view: (function () {
+            return $.extend({}, _getRemoteSessionData.data(),{
+                isFullDisplay: (function () {
+                    return window.isFullDisplay();
+                })(),
+
+                frontEndID: (function () {
+                    return _getFrontEndID.data();
+                }())
+            });
+        })(),
         user: {
             id: _getUserInfo.data().id,
             name: _getUserInfo.data().name,
@@ -72,7 +59,9 @@ jQuery.PRIMO = {
                 name: ''
             },
             isOnCampus: '',
-            isLoggedIn: function(){return _getUserInfo.data().loggedIn;}
+            isLoggedIn: function () {
+                return _getUserInfo.data().loggedIn;
+            }
         }
 
     },
@@ -85,6 +74,3 @@ jQuery.PRIMO = {
         return $(data);
     }())
 };
-
-
-

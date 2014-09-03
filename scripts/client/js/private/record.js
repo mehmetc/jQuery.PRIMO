@@ -12,10 +12,12 @@ function _record(i) {
      * @property record.id
      * @property record.title
      * @property record.openUrl
-     * @property record.isRemoteRecord
+     * @property record.isRemoteRecord()
      * @property record.tabs
-     * @method   record.getData
-     * @method   record.getPNX
+     * @method   record.getData()
+     * @method   record.getPNX()
+     * @method   record.getDedupedRecordIds()
+     * @method   record.getIt1()
      * */
     var record = jQuery(jQuery('.EXLResult')[i]);
 
@@ -25,9 +27,15 @@ function _record(i) {
     record.title = record.find('.EXLResultTitle').text().trim();
     record.openUrl = record.find('.EXLMoreTab a').attr('href');
     record.tabs = _tabs(record);
-    record.getIt1 = _getGetIt(record); // needs tabs
+
+
 
 // methods
+    record.getIt1 = function(){ return _getGetIt(record);} // needs tabs
+
+
+    record.getDedupedRecordIds =  function(){ return _getRecordIdInDedupRecord(record.id).data() };
+
     record.isRemoteRecord = function(){ return (record.id.substring(0, 2) === 'TN')};
 
     record.getData = function(){
@@ -100,6 +108,36 @@ function _getIsDedupRecord(id) {
     return id.search(/^dedupmrg/) != -1;
 };
 
+/**
+ * Private method to retrieve record id's of a deduped record
+ * @method _getRecordIdInDedupRecord
+ * @private
+ * @param {String} record id
+ * @returns {Array} list of record id's
+ */
+function _getRecordIdInDedupRecord(id) {
+    var dedupRecordIds = [];
+
+    return {
+        data: function(){
+            if (dedupRecordIds.length === 0){
+                if (_getIsDedupRecord(id)) {
+                    jQuery.ajax({
+                        async: false,
+                        type: 'get',
+                        dataType: 'json',
+                        data: {"id": id},
+                        url: '/primo_library/libweb/dedup_records_helper.jsp'
+                    }).done(function(data, textStatus, jqXHR){
+                        dedupRecordIds = data;
+                    });
+                }
+            }
+
+            return dedupRecordIds;
+        }
+    }
+}
 
 /**
  * Private method to retrieve the material type of a record.

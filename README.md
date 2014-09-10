@@ -43,17 +43,17 @@ Compilation  (TODO)
 
 ###Check if the current user is logged in
 ```js
-    jQuery.PRIMO.session.user.isLoggedIn();    
+    jQuery.PRIMO.session.user.isLoggedIn;    
 ```
 
 ###Get the current view code
 ```js
-    jQuery.PRIMO.session.view.name;
+    jQuery.PRIMO.session.view.code;
 ```
 
 ###Is the current view in full display mode
 ```js
-    jQuery.PRIMO.session.view.isFullDisplay();    
+    jQuery.PRIMO.session.view.isFullDisplay;    
 ```
 
 ###Get the record id of the 6th field
@@ -61,9 +61,11 @@ Compilation  (TODO)
     jQuery.PRIMO.records[5].id;    
 ```
 
-###Get the PNX data as text of the 6th record
+###Get the PNX data as text,json,xml of the 6th record
 ```js
-    jQuery.PRIMO.records[5].getPNX('text');    
+    jQuery.PRIMO.records[5].getPNX('text');
+    jQuery.PRIMO.records[5].getPNX('json');
+    jQuery.PRIMO.records[5].getPNX();    
 ```
 
 ###Get the material type of the first record

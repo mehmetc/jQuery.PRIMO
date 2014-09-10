@@ -1,5 +1,6 @@
 /**
  * Transform an XML document into JSON
+ * @method _xml2json
  * @param {document} xml
  * @param {boolean} extended
  * @returns {object}

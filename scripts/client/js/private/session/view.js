@@ -1,6 +1,6 @@
 /**
  * Reads the FrontEndID from the X-PRIMO-FE-ENVIRONMENT header
- * @method
+ * @method _getFrontEndID
  * @return {String} FrontEnd ID
  * @private
  */

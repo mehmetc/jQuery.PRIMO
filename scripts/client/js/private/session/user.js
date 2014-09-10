@@ -1,6 +1,6 @@
 /**
  * Retrieves user id, name and if user is logged in
- * @method
+ * @method _getUserInfo
  * @returns {Object} returns a User object.
  * @description There is also a native window.getUserInfo() method it does exactly the same thing but is less efficient.
  * @private

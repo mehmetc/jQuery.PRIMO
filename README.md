@@ -71,6 +71,11 @@ Compilation  (TODO)
     jQuery.PRIMO.records[0].getData().display.type
 ```
 
+###Get all record ids for a deduped record
+```js
+    jQuery.PRIMO.records[2].getDedupedRecordIds()
+```
+
 ###Highlight all journals on screen
 ```js
       jQuery.PRIMO.records.each(

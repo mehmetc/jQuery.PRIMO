@@ -16,16 +16,6 @@
  */
 function _record(i) {
     var recordData = null;
-    /** @class Record
-     * @property record.index
-     * @property record.id
-     * @property record.title
-     * @property record.openUrl
-     * @property record.isRemoteRecord
-     * @property record.tabs
-     * @method   record.getData
-     * @method   record.getPNX
-     * */
     var record = jQuery(jQuery('.EXLResult')[i]);
 
 // attributes
@@ -64,7 +54,7 @@ function _record(i) {
 };
 
 /**
- *
+ * @method _getPNXData
  * @param {String} recordID - The record id
  * @params {String} type - The type of response to return can be one of text,json or xml. XML is the default
  * @returns {Object} PNX record
@@ -82,7 +72,7 @@ var _getPNXData = function (recordID, type) {
             type: 'get',
             dataType: 'xml',
             //url: '/primo_library/libweb/showPNX.jsp?id=' + recordIndex,
-            url: '/primo_library/libweb/action/display.do?vid=' + jQuery.PRIMO.session.view.name + '&showPnx=true&pds_handle=GUEST&doc=' + recordID,
+            url: '/primo_library/libweb/action/display.do?vid=' + jQuery.PRIMO.session.view.code + '&showPnx=true&pds_handle=GUEST&doc=' + recordID,
             success: function (data, event, xhr) {
 
                 if (xhr.getResponseHeader('Content-Type').search(/xml/) >= 0) {
@@ -158,6 +148,12 @@ function _materialType(record) {
 };
 
 
+/**
+ * @method _getGetIt
+ * @param {Object} record
+ * @returns {string}
+ * @private
+ */
 function _getGetIt(record){
     var getIt = [];
     var view_online = record.tabs.getByName('ViewOnline');
@@ -360,6 +356,7 @@ function _addTab(tabName, options) {
 }
 /**
  * Transform an XML document into JSON
+ * @method _xml2json
  * @param {document} xml
  * @param {boolean} extended
  * @returns {object}
@@ -546,27 +543,47 @@ function _xml2text(xmlDoc){
 
 /**
  * Retrieves session data only available on the server
- * @method
+ * @method _getSessionData
  * @returns {Object} returns session data.
- * @description Retrieves session data only available on the server
+ * @description Retrieves session data from server with fallback
  * @private
  */
-var _getRemoteSessionData = (function() {
-      var remoteSession = null;
+var _getSessionData = (function() {
+      var sessionData = null;
       return {
         data: function() {
-          if (!remoteSession) {
-            remoteSession = {};
+          if (!sessionData) {
+              sessionData = {};
             jQuery.ajax({
               async: false,
               type: 'get',
               dataType: 'json',
               url: '/primo_library/libweb/remote_session_data_helper.jsp'
             }).done(function(data, textStatus, jqXHR){
-                remoteSession = data;
+                sessionData = data;
+            }).fail(function(data, textStatus, jqXHR){
+                sessionData = {
+                    view: {},
+                    user: {
+                        id: _getUserInfo.data().id,
+                        name: _getUserInfo.data().name,
+                        isLoggedIn: function () {
+                            return _getUserInfo.data().loggedIn;
+                        }
+                    }
+                }
             });
 
-            return remoteSession;
+            $.extend(sessionData.view,{
+                  isFullDisplay: (function () {
+                      return window.isFullDisplay();
+                  })(),
+
+                  frontEndID: (function () {
+                      return _getFrontEndID.data();
+                  }())
+              });
+            return sessionData;
           }
         }
       }
@@ -574,7 +591,7 @@ var _getRemoteSessionData = (function() {
 
 /**
  * Retrieves user id, name and if user is logged in
- * @method
+ * @method _getUserInfo
  * @returns {Object} returns a User object.
  * @description There is also a native window.getUserInfo() method it does exactly the same thing but is less efficient.
  * @private
@@ -605,7 +622,7 @@ var _getUserInfo = (function () {
 })();
 /**
  * Reads the FrontEndID from the X-PRIMO-FE-ENVIRONMENT header
- * @method
+ * @method _getFrontEndID
  * @return {String} FrontEnd ID
  * @private
  */
@@ -636,67 +653,10 @@ var _getFrontEndID = (function () {
  */
 
 /**
- * @namespace
- * @property {object} session                               - session data
- * @property {object} session.view                          - info on current view
- * @property {string} session.view.frontEndID               - frontend id that rendered the view
- * @property {string} session.view.name                     - view name
- * @property {string} session.view.language                 - current view language
- * @property {object} session.view.institution              - institution set to the view
- * @property {object} session.view.institution.name         - institution name
- * @property {string} session.view.institution.name.vid     - institution name according to the VID
- * @property {string} session.view.institution.name.ip      - institution name mapped on user IP
- * @property {string} session.view.institution.name.view    - institution name mapped to user view
- * @property {object} session.view.institution.code         - institution code
- * @property {string} session.view.institution.code.vid     - institution code by VID
- * @property {string} session.view.institution.code.ip      - institution code mapped on user IP
- * @property {string} session.view.institution.code.view    - institution code mapped on user view
- * @method   {boolean} session.view.isFullDisplay           - is the current view in full display mode
- * @property {object} session.user                          - user data
- * @property {string} session.user.id                       - user id
- * @property {string} session.user.name                     - user name
- * @property {object} session.user.group                    - user group
- * @property {string} session.user.group.id                 - group id
- * @property {string} session.user.group.name               - group name
- * @property {boolean} session.user.isOnCampus              - is the user on campus
- * @method   {boolean} session.user.isLoggedIn              - is the user logged in
- * @property {array} records                                - available records
- *
- *
- *
- * ### Get current view name
- * @example
- * > console.log(jQuery.PRIMO.session.view.name);
- * "KULeuven"
- *
+ * @namespace jQuery.PRIMO
  */
 jQuery.PRIMO = {
-    session: {
-        view: (function () {
-            return $.extend({}, _getRemoteSessionData.data(),{
-                isFullDisplay: (function () {
-                    return window.isFullDisplay();
-                })(),
-
-                frontEndID: (function () {
-                    return _getFrontEndID.data();
-                }())
-            });
-        })(),
-        user: {
-            id: _getUserInfo.data().id,
-            name: _getUserInfo.data().name,
-            group: {
-                id: '',
-                name: ''
-            },
-            isOnCampus: '',
-            isLoggedIn: function () {
-                return _getUserInfo.data().loggedIn;
-            }
-        }
-
-    },
+    session: (function() {return _getSessionData.data()})(),
     records: (function () {
         var records_count = jQuery('.EXLResult').length;
         var data = [];

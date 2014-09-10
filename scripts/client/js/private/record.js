@@ -7,18 +7,6 @@
  */
 function _record(i) {
     var recordData = null;
-    /** @class Record
-     * @property record.index
-     * @property record.id
-     * @property record.title
-     * @property record.openUrl
-     * @property record.isRemoteRecord()
-     * @property record.tabs
-     * @method   record.getData()
-     * @method   record.getPNX()
-     * @method   record.getDedupedRecordIds()
-     * @method   record.getIt1()
-     * */
     var record = jQuery(jQuery('.EXLResult')[i]);
 
 // attributes
@@ -57,7 +45,7 @@ function _record(i) {
 };
 
 /**
- *
+ * @method _getPNXData
  * @param {String} recordID - The record id
  * @params {String} type - The type of response to return can be one of text,json or xml. XML is the default
  * @returns {Object} PNX record
@@ -75,7 +63,7 @@ var _getPNXData = function (recordID, type) {
             type: 'get',
             dataType: 'xml',
             //url: '/primo_library/libweb/showPNX.jsp?id=' + recordIndex,
-            url: '/primo_library/libweb/action/display.do?vid=' + jQuery.PRIMO.session.view.name + '&showPnx=true&pds_handle=GUEST&doc=' + recordID,
+            url: '/primo_library/libweb/action/display.do?vid=' + jQuery.PRIMO.session.view.code + '&showPnx=true&pds_handle=GUEST&doc=' + recordID,
             success: function (data, event, xhr) {
 
                 if (xhr.getResponseHeader('Content-Type').search(/xml/) >= 0) {
@@ -151,6 +139,12 @@ function _materialType(record) {
 };
 
 
+/**
+ * @method _getGetIt
+ * @param {Object} record
+ * @returns {string}
+ * @private
+ */
 function _getGetIt(record){
     var getIt = [];
     var view_online = record.tabs.getByName('ViewOnline');

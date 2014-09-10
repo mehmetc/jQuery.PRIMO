@@ -1,7 +1,7 @@
 jQuery.PRIMO
 ============
 
-A client side convenience library for PRIMO v4.6 or better.
+A client side convenience library for PRIMO v4.6 and better.
 
 
 Installation  (TODO)

@@ -18,8 +18,6 @@ try{
     JSONObject obj=new JSONObject();
 //GENERAL
     obj.put("sessionId", SessionUtils.getSessionId(request));
-    obj.put("isOnCampus",Boolean.valueOf(SessionUtils.getOnCampus(request)).booleanValue());
-    obj.put("isLoggedIn",SessionUtils.getIsLoggedIn(request));
     obj.put("interfaceLanguage", SessionUtils.getChosenInterfaceLanguage(request));
     obj.put("pdsUrl", SessionUtils.getPDSUrl(request));
 
@@ -31,11 +29,8 @@ try{
             userObj.put("id", userInfo.getUserId());
             userObj.put("name", userInfo.getUserName());
             userObj.put("email", userInfo.getEmail());
-
-//          JSONObject groupObj = new JSONObject();
-//          groupObj.put("id", userInfo.getBorGroupId());
-//          groupObj.put("name", userInfo.getBorGroup());
-//          userObj.put("group", groupObj);
+            userObj.put("isOnCampus",Boolean.valueOf(SessionUtils.getOnCampus(request)).booleanValue());
+            userObj.put("isLoggedIn",SessionUtils.getIsLoggedIn(request));
     }
 
     obj.put("user", userObj);

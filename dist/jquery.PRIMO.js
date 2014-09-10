@@ -33,7 +33,7 @@ function _record(i) {
 
     record.getDedupedRecordIds =  function(){ return _getRecordIdInDedupRecord(record.id).data() };
 
-    record.isRemoteRecord = function(){ return (record.id.substring(0, 2) === 'TN')};
+    record.isRemoteRecord = (function(){ return (record.id.substring(0, 2) === 'TN')})();
 
     record.getData = function(){
         if(!recordData){

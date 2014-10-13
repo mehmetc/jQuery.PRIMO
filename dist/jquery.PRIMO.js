@@ -24,8 +24,7 @@ function _record(i) {
     record.title = record.find('.EXLResultTitle').text().trim();
     record.openUrl = record.find('.EXLMoreTab a').attr('href');
     record.tabs = _tabs(record);
-
-
+    record.materialType = _materialType();
 
 // methods
     record.getIt1 = function(){ return _getGetIt(record);} // needs tabs
@@ -127,6 +126,8 @@ function _getRecordIdInDedupRecord(id) {
                         url: '/primo_library/libweb/dedup_records_helper.jsp'
                     }).done(function(data, textStatus, jqXHR){
                         dedupRecordIds = data;
+                    }).fail(function(data, textStatus, jqXHR){
+                        console.log('You need the dedup_records_helper.jsp file');
                     });
                 }
             }
@@ -166,6 +167,85 @@ function _getGetIt(record){
     return url;
 }
 
+/**
+ * Class to perform searches needs configuration on PRIMO site too. 'WS and XS IP' mapping table must allow external IP's
+ * @class _search
+ * @private
+ */
+function _search() {
+    return {
+        /**
+         * Get Record by record_id
+         * @method by_record_id
+         * @private
+         * @param {String} record id
+         * @returns {Object} record hash
+         */
+        by_record_id: function(rid, options){
+            if (rid === undefined) {
+                throw 'You must supply a record id'
+            }
+
+            var institution = options !== undefined ? options['institution'] : jQuery.PRIMO.session.view.code;
+            var index       = options !== undefined ? options['index'] : 1;
+            var bulkSize    = options !== undefined ? options['bulkSize'] : 10;
+
+            var result      = [];
+
+            jQuery.get('/PrimoWebServices/xservice/search/brief?institution=' + institution + '&query=rid,contains,' + rid +
+                       '&indx=' + index + '&bulkSize=' + bulkSize)
+                  .done(function(data){
+                    result = $(_xml2json(data));
+                    })
+                  .fail(function(data){
+                    console.log('error searching')
+                    });
+
+            return result;
+        },
+        /**
+         * Get Record by a query in the form of index,match type,query
+         * @method by_query
+         * @private
+         * @param {String} query
+         * @returns {Object} record hash
+         */
+        by_query: function(query, options) {
+            var institution = options !== undefined ? options['institution'] : jQuery.PRIMO.session.view.code;
+            var index       = options !== undefined ? options['index'] : 1;
+            var bulkSize    = options !== undefined ? options['bulkSize'] : 10;
+
+            if (Array.isArray(query)){
+                jQuery.each(query, function(index, value){
+                query =+ '&query=' + value;
+                });
+            } else {
+                query = '&query=' + query;
+            }
+
+            var result = [];
+
+            jQuery.ajax(
+                {
+                    async: false,
+                    type: 'get',
+                    dataType: 'xml',
+                    url: '/PrimoWebServices/xservice/search/brief?institution=' + institution + '&indx=' + index + '&bulkSize=' + bulkSize + query
+                })
+                .done(function(data, event, xhr){
+                    result = $(_xml2json(data));
+                })
+                .fail(function(data, event, xhr){
+                    console.log('error searching')
+                });
+            ;
+
+
+
+            return result.length > 0 ? result[0].JAGROOT.RESULT.DOCSET.DOC : null;
+        }
+    }
+}
 /**
  * Private method to get information on a single tab
  * @method _tabs
@@ -562,6 +642,8 @@ var _getSessionData = (function() {
             }).done(function(data, textStatus, jqXHR){
                 sessionData = data;
             }).fail(function(data, textStatus, jqXHR){
+                // Fallback when file is not available. Maybe we should not do this.
+                //TODO: do we need this?
                 sessionData = {
                     view: {},
                     user: {
@@ -664,7 +746,8 @@ jQuery.PRIMO = {
         for (var j = 0; j < records_count; j++) data.push(_record(j));
 
         return $(data);
-    }())
+    }()),
+    search: _search()
 };
 
 })(jQuery);

@@ -19,6 +19,8 @@ var _getSessionData = (function() {
             }).done(function(data, textStatus, jqXHR){
                 sessionData = data;
             }).fail(function(data, textStatus, jqXHR){
+                // Fallback when file is not available. Maybe we should not do this.
+                //TODO: do we need this?
                 sessionData = {
                     view: {},
                     user: {

@@ -18,7 +18,6 @@ try{
     JSONObject obj=new JSONObject();
 //GENERAL
     obj.put("sessionId", SessionUtils.getSessionId(request));
-    obj.put("interfaceLanguage", SessionUtils.getChosenInterfaceLanguage(request));
     obj.put("pdsUrl", SessionUtils.getPDSUrl(request));
 
 //USER
@@ -55,6 +54,7 @@ try{
     }
 
     viewObj.put("institution", viewInstitutionObj);
+    viewObj.put("interfaceLanguage", SessionUtils.getChosenInterfaceLanguage(request));
     obj.put("view", viewObj);
 
 //IP

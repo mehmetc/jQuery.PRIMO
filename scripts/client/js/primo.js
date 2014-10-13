@@ -15,5 +15,6 @@ jQuery.PRIMO = {
         for (var j = 0; j < records_count; j++) data.push(_record(j));
 
         return $(data);
-    }())
+    }()),
+    search: _search()
 };

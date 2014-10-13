@@ -15,8 +15,7 @@ function _record(i) {
     record.title = record.find('.EXLResultTitle').text().trim();
     record.openUrl = record.find('.EXLMoreTab a').attr('href');
     record.tabs = _tabs(record);
-
-
+    record.materialType = _materialType();
 
 // methods
     record.getIt1 = function(){ return _getGetIt(record);} // needs tabs
@@ -118,6 +117,8 @@ function _getRecordIdInDedupRecord(id) {
                         url: '/primo_library/libweb/dedup_records_helper.jsp'
                     }).done(function(data, textStatus, jqXHR){
                         dedupRecordIds = data;
+                    }).fail(function(data, textStatus, jqXHR){
+                        console.log('You need the dedup_records_helper.jsp file');
                     });
                 }
             }

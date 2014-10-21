@@ -6,22 +6,34 @@ A client side convenience library for PRIMO v4.6 and better.
 
 Installation  (TODO)
 ------------
+
+### Just for testing
 You can inject the script into your results page, for testing. This works best using Firefox.
-Do a search and open the JavaScript console and paste the next line.
+Open the JavaScript console and paste the next line. You will not be able to use the more advanced functions 
+but it should give you an idea of what it can be used for.
 ```js
     $.getScript('https://raw.githubusercontent.com/mehmetc/jQuery.PRIMO/master/dist/jquery.PRIMO.js')
-```
-If you get strange errors just copy the complete source into your console.    
+``` 
+Browsers are getting stricter with every release. If you get strange errors just copy the complete source into your console.    
     
-If want a more permanent solution: 
-- Use the 'File Uploader' on the backend to copy `dist/jquery.PRIMO.min.js` to your PRIMO server.     
-- Add a custom tile to the end of your customized layout set using the 'Views Wizard'. Do this for the 3 pages(home, brief, full).
-  The content of the custom tile must include
-    <script type='text/javascript' src='/primo_library/libweb/uploaded_files/YOUR_VID/jquery.PRIMO.min.js'></script>
-  Change YOUR_VID into the VID you selected in the 'File Uploader'
+### A more permanent solution    
+- Copy the contents of scripts/server/* to fe_web 
+```bash
+    scp scripts/server/* primo@my_primo.example.com:/exlibris/primo/p4_1/ng/primo/home/system/tomcat/search/webapps/primo_library#libweb
+```    
+- Copy jquery.PRIMO.min.js to fe_web
+```bash
+    scp dist/jquery.PRIMO.min.js primo@my_primo.example.com:/exlibris/primo/p4_1/ng/primo/home/system/tomcat/search/webapps/primo_library#libweb
+```    
+- Add jquery.PRIMO.min.js to static_htmls/footer.html or to a custom tile
+```js    
+    <script type='text/javascript' src='/primo_library/libweb/jquery.PRIMO.min.js'></script>
+```    
+  
 
 Compilation  (TODO)
 -----------
+If you would want to compile jquery.PRIMO.js then follow these steps
 - Install [npm](http://nodejs.org/) and [gulp](http://gulpjs.com/)
 - `npm install`
 - `gulp`
@@ -45,10 +57,20 @@ Compilation  (TODO)
     jQuery.PRIMO.session.user.isLoggedIn;    
 ```
 
+###Check if the current user is on campus
+```js
+    jQuery.PRIMO.session.user.isOnCampus;    
+```
+
 ###Get the current view code
 ```js
     jQuery.PRIMO.session.view.code;
 ```
+
+###Get the current view's institution
+```js
+    jQuery.PRIMO.session.view.institution.name;
+```  
 
 ###Is the current view in full display mode
 ```js

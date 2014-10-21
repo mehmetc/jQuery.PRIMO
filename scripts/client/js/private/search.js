@@ -69,11 +69,15 @@ function _search() {
                 .fail(function(data, event, xhr){
                     console.log('error searching')
                 });
-            ;
 
 
+            if (result.length > 0 && result[0].hasOwnProperty('JAGROOT')) {
+                return result[0].JAGROOT.RESULT.DOCSET.DOC;
+            } else if (result.length > 0 && result[0].hasOwnProperty('MESSAGE'))  {
+                console.log(result[0].MESSAGE);
+            }
 
-            return result.length > 0 ? result[0].JAGROOT.RESULT.DOCSET.DOC : null;
+            return null;
         }
     }
 }

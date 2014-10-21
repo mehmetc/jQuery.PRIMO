@@ -15,7 +15,7 @@ function _record(i) {
     record.title = record.find('.EXLResultTitle').text().trim();
     record.openUrl = record.find('.EXLMoreTab a').attr('href');
     record.tabs = _tabs(record);
-    record.materialType = _materialType();
+    record.materialType = _materialType(record);
 
 // methods
     record.getIt1 = function(){ return _getGetIt(record);} // needs tabs

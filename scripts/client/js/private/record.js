@@ -81,7 +81,11 @@ var _getPNXData = function (recordID, type) {
                 }
             }
         });
-    return pnx;
+    if ($.isArray(pnx)) {
+        return pnx[0];
+    } else {
+        return pnx;
+    }
 };
 
 /**
@@ -136,7 +140,8 @@ function _getRecordIdInDedupRecord(id) {
  * @returns {String} the material type
  */
 function _materialType(record) {
-    return _getPNXData(record.id).find('type').text();
+    //return _getPNXData(record.id, 'json').display.type;
+    return record.getData().display.type;
 };
 
 

@@ -22,7 +22,7 @@ var _getSessionData = (function() {
                 // Fallback when file is not available. Maybe we should not do this.
                 //TODO: do we need this?
                 sessionData = {
-                    view: {},
+                    view: {code: $('#vid').val()},
                     user: {
                         id: _getUserInfo.data().id,
                         name: _getUserInfo.data().name,

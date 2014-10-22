@@ -42,66 +42,181 @@ If you would want to compile jquery.PRIMO.js then follow these steps
 
 
 
-##Examples  
+#Examples  
   
-###Read the current sessions user id
+- [misc](#misc)  
+- [session](#session)
+- [records](#records)
+- [search](#search)  
+  
+##**MISC**<a name="misc"></a>  
+#### Version of jQuery.PRIMO library
+```js
+    jQuery.PRIMO.version;
+```
+
+##**SESSION**<a name="session"></a>
+- [user](#user)
+- [view](#view)
+- [ip](#ip)
+
+#### Get the url for PDS
+```js
+    jQuery.PRIMO.session.pdsUrl;
+```
+
+#### Get the session id
+```js
+    jQuery.PRIMO.session.sessionId;
+```
+
+###**USER**<a name="user"></a>
+#### Read the current sessions user id
 ```js
     jQuery.PRIMO.session.user.id;    
 ```
 
-###Read the current session user name
+#### Read the current session user name
 ```js
     jQuery.PRIMO.session.user.name;            
 ```
 
-###Check if the current user is logged in
+#### Read the current session user email
+```js
+    jQuery.PRIMO.session.user.email;            
+```
+
+#### Check if the current user is logged in
 ```js
     jQuery.PRIMO.session.user.isLoggedIn;    
 ```
 
-###Check if the current user is on campus
+#### Check if the current user is on campus
 ```js
     jQuery.PRIMO.session.user.isOnCampus;    
 ```
-
-###Get the current view code
+###**VIEW**<a name="view"></a>
+#### Get the current view code
 ```js
     jQuery.PRIMO.session.view.code;
 ```
 
-###Get the current view's institution
+#### Get the current view's institution name
 ```js
     jQuery.PRIMO.session.view.institution.name;
 ```  
 
-###Is the current view in full display mode
+#### Get the current view's institution code
+```js
+    jQuery.PRIMO.session.view.institution.code;
+```  
+
+#### Get the current view's interface language
+```js
+    jQuery.PRIMO.session.view.interfaceLanguage;
+```  
+
+#### Is the current view in full display mode
 ```js
     jQuery.PRIMO.session.view.isFullDisplay;    
 ```
 
-###Get the record id of the 6th field
+#### Get the current view frontend id
+  <pre>/exlibris/primo/p4_1/ng/primo/home/system/tomcat/search/webapps/primo_library#libweb/WEB-INF/urlrewrite.xml</pre>
+  must contain
+```xml 
+   <urlrewrite>
+       <rule>
+           <from>.*</from>
+           <set type="response-header" name="X-PRIMO-FE-ENVIRONMENT">sandbox</set>
+       </rule>
+   </urlrewrite>
+```
+
+Then you can query the frontend id   
+
+```js
+    jQuery.PRIMO.session.view.frontEndID;    
+```
+
+###**IP**<a name="ip"></a>
+
+####Get IP address as seen on PRIMO
+```js
+    jQuery.PRIMO.session.ip.address
+```
+
+####Get institution name by IP 
+```js
+    jQuery.PRIMO.session.ip.institution.name
+```
+
+####Get institution code by IP 
+```js
+    jQuery.PRIMO.session.ip.institution.code
+```    
+
+##**RECORDS**<a name="records"></a>
+- [tabs](#tabs)
+
+#### Get number of records on screen (this is an Array)
+```js
+    jQuery.PRIMO.records.length
+```
+
+#### Get the record id of the 6th field
 ```js
     jQuery.PRIMO.records[5].id;    
 ```
 
-###Get the PNX data as text,json,xml of the 6th record
+#### Get the record index
+```js
+    jQuery.PRIMO.records[5].index;    
+```
+
+#### Get title of 6th record
+```js
+    jQuery.PRIMO.records[5].title;    
+```
+
+#### Get OpenUrl of 6th record
+```js
+    jQuery.PRIMO.records[5].openUrl;
+```
+
+#### Get type of 6th record
+```js
+    jQuery.PRIMO.records[5].materialType();
+```    
+
+#### Get getIt1 of 6th record
+```js
+    jQuery.PRIMO.records[5].getIt1();
+```    
+
+#### Is the 6th record a remote record
+```js
+    jQuery.PRIMO.records[5].isRemoteRecord;
+```
+
+#### Get the PNX data as text,json,xml of the 6th record
 ```js
     jQuery.PRIMO.records[5].getPNX('text');
     jQuery.PRIMO.records[5].getPNX('json');
     jQuery.PRIMO.records[5].getPNX();    
 ```
 
-###Get the material type of the first record
+#### Get the material type of the first record
 ```js
     jQuery.PRIMO.records[0].getData().display.type
 ```
 
-###Get all record ids for a deduped record
+#### Get all record ids for a deduped record
 ```js
     jQuery.PRIMO.records[2].getDedupedRecordIds()
 ```
 
-###Highlight all journals on screen
+#### Highlight all journals on screen
 ```js
       jQuery.PRIMO.records.each(
         function(){ 
@@ -112,7 +227,7 @@ If you would want to compile jquery.PRIMO.js then follow these steps
       ); 
 ```
 
-###Make the 'View Online' tab popout
+#### Make the 'View Online' tab popout
 ```js
     jQuery.PRIMO.records.each(
         function(index, record){
@@ -127,7 +242,8 @@ If you would want to compile jquery.PRIMO.js then follow these steps
     );    
 ```
 
-###Add a new tab to all records
+##**TABS**<a name="tabs"></a>
+#### Add a new tab to all records
 ```js
       jQuery.PRIMO.records.each(
         function(index, record){
@@ -145,7 +261,7 @@ If you would want to compile jquery.PRIMO.js then follow these steps
       );
 ```      
       
-### Add a new share tab and make the sendTo tab appear.
+#### Add a new share tab and make the sendTo tab appear.
 ```js
     jQuery.PRIMO.records.each(
         function(index, record){
@@ -187,7 +303,7 @@ If you would want to compile jquery.PRIMO.js then follow these steps
     );        
 ```          
       
-### Open an URL in the tab of the first record
+#### Open an URL in the tab of the first record
 ```js
     jQuery.PRIMO.records[0].tabs.addTab('KULeuven', {state:'enabled',
                                                 url:'http://www.kuleuven.be',
@@ -200,7 +316,7 @@ If you would want to compile jquery.PRIMO.js then follow these steps
                                                 }
                                                });      
 ```
-### Open the URL in a new window. Works as a normal link.
+#### Open the URL in a new window. Works as a normal link.
 ```js
        jQuery.PRIMO.records[1].tabs.addTab('url', {state:'enabled',
                                                    url:'http://www.kuleuven.be', url_target: '_blank',
@@ -208,7 +324,28 @@ If you would want to compile jquery.PRIMO.js then follow these steps
                                                   }); 
 ```                                                  
   
-### Search for water 
+#### Get all tab names for the 6th record
+```js  
+    jQuery.PRIMO.records[5].tabs.getNames();
+```
+
+#### Get all active tabs
+```js
+    jQuery.PRIMO.records[5].tabs.getEnabled();
+``` 
+
+#### Get the details tab by name
+```js
+    jQuery.PRIMO.records[5].tabs.getByName('Details');
+```   
+  
+#### Get the link behind the details tab
+```js
+  jQuery.PRIMO.records[5].tabs.getByName('Details').find('a').attr('href');
+```  
+    
+##**SEARCH**<a name="search"></a>  
+#### Search for water 
 *This wraps the default [XServices API](https://developers.exlibrisgroup.com/primo/apis/webservices/xservices/search/briefsearch) this means that 'WS and XS IP' restrictions apply*
 **TODO: move to server** 
 

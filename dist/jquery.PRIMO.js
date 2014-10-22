@@ -405,6 +405,7 @@ function _addTab(tabName, options) {
         state: 'disabled',
         css: tabName.replace(' ', '').toLowerCase() + 'Tab',
         url: '#',
+        url_target: '',
         tooltip: '',
         headerContent: '',
         click: function (e) {
@@ -417,7 +418,10 @@ function _addTab(tabName, options) {
     if (jQuery.inArray(tabName, o.record.tabs.getNames()) < 0) { // not in tablist -> new tab
         var customTab = '<li class="EXLResultTab ' + o.css + '">';
         customTab += '  <span style="display:' + (o.state == 'disabled' ? 'block' : 'none') + '">' + tabName + '</span>';
-        customTab += '  <a style="display:' + (o.state == 'disabled' ? 'none' : 'block') + '" title="' + o.tooltip + '" href="' + o.url + '">' + tabName + '</a>';
+        customTab += '  <a style="display:' + (o.state == 'disabled' ? 'none' : 'block') + '"';
+        customTab += '     title="' + o.tooltip + '"';
+        customTab += '     target="' + o.url_target + '"';
+        customTab += '      href="' + o.url + '">' + tabName + '</a>';
         customTab += '</li>';
         var customTabContainer = '<div class="EXLResultTabContainer EXLContainer-' + o.css + '"></div>';
 
@@ -429,16 +433,18 @@ function _addTab(tabName, options) {
         }
 
         var customClassQuery = '.' + o.css + ' a';
-        o.record.find(customClassQuery).click(function (e) {
-            e.preventDefault();
-            if (o.state == 'enabled') {
-                tab = o.record.tabs.getByName(tabName);
-                o.click(e, tab, o.record, o);
-            }
-        });
+        if (o.click !== null) {
+            o.record.find(customClassQuery).click(function (e) {
+                e.preventDefault();
+                if (o.state == 'enabled') {
+                    tab = o.record.tabs.getByName(tabName);
+                    o.click(e, tab, o.record, o);
+                }
+            });
+        }
     }
     else {
-
+      //TODO
     }
 
     o.record.tabs = _tabs(o.record);

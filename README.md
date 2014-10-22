@@ -19,11 +19,11 @@ Browsers are getting stricter with every release. If you get strange errors just
 ### A more permanent solution    
 - Copy the contents of scripts/server/* to fe_web 
 ```bash
-    scp scripts/server/* primo@my_primo.example.com:/exlibris/primo/p4_1/ng/primo/home/system/tomcat/search/webapps/primo_library#libweb
+    scp scripts/server/* primo@my_primo.example.com:/exlibris/primo/p4_1/ng/primo/home/system/tomcat/search/webapps/primo_library?libweb
 ```    
 - Copy jquery.PRIMO.min.js to fe_web
 ```bash
-    scp dist/jquery.PRIMO.min.js primo@my_primo.example.com:/exlibris/primo/p4_1/ng/primo/home/system/tomcat/search/webapps/primo_library#libweb
+    scp dist/jquery.PRIMO.min.js primo@my_primo.example.com:/exlibris/primo/p4_1/ng/primo/home/system/tomcat/search/webapps/primo_library?libweb
 ```    
 - Add jquery.PRIMO.min.js to static_htmls/footer.html or to a custom tile
 ```js    
@@ -183,8 +183,7 @@ If you would want to compile jquery.PRIMO.js then follow these steps
         });
        }
     );        
-```      
-      
+```          
       
       
       

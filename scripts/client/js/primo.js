@@ -16,5 +16,6 @@ jQuery.PRIMO = {
 
         return $(data);
     }()),
-    search: _search()
+    search: _search(),
+    version: "<%= version %>"
 };

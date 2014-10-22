@@ -1,7 +1,9 @@
 jQuery.PRIMO
 ============
 
-A client side convenience library for PRIMO v4.6 and better.
+A client side convenience library for PRIMO v4.6 and better. 
+This is a work in progress. This might not work for you at all but if more people use it the better it will get. 
+If you want a feature, have a comment, found a bug or just want to talk ping me.  
 
 
 Installation  (TODO)
@@ -25,7 +27,7 @@ Browsers are getting stricter with every release. If you get strange errors just
 ```bash
     scp dist/jquery.PRIMO.min.js primo@my_primo.example.com:/exlibris/primo/p4_1/ng/primo/home/system/tomcat/search/webapps/primo_library?libweb
 ```    
-- Add jquery.PRIMO.min.js to static_htmls/footer.html or to a custom tile
+- Add jquery.PRIMO.min.js to static_htmls/footer.html or to a custom tile and add the snippet below to it
 ```js    
     <script type='text/javascript' src='/primo_library/libweb/jquery.PRIMO.min.js'></script>
 ```    
@@ -185,7 +187,34 @@ If you would want to compile jquery.PRIMO.js then follow these steps
     );        
 ```          
       
-      
+### Open an URL in the tab of the first record
+```js
+    jQuery.PRIMO.records[0].tabs.addTab('KULeuven', {state:'enabled',
+                                                url:'http://www.kuleuven.be',
+                                                click:function(event, tab, record, options) {
+                                                    if (tab.isOpen()) {
+                                                        tab.close();
+                                                    } else {
+                                                        tab.open('<iframe src="'+options.url+'"/>', {reload: true});
+                                                    }
+                                                }
+                                               });      
+```
+### Open the URL in a new window. Works as a normal link.
+```js
+       jQuery.PRIMO.records[1].tabs.addTab('url', {state:'enabled',
+                                                   url:'http://www.kuleuven.be', url_target: '_blank',
+                                                   click: null
+                                                  }); 
+```                                                  
+  
+### Search for water 
+*This wraps the default [XServices API](https://developers.exlibrisgroup.com/primo/apis/webservices/xservices/search/briefsearch) this means that 'WS and XS IP' restrictions apply*
+**TODO: move to server** 
+
+```js
+    var result = jQuery.PRIMO.search.by_query('any,contains,water');
+```    
       
       
 # Contributing to jQuery.PRIMO

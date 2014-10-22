@@ -1,5 +1,15 @@
 /**
  * Reads the FrontEndID from the X-PRIMO-FE-ENVIRONMENT header
+ * create or add to /exlibris/primo/p4_1/ng/primo/home/system/tomcat/search/webapps/primo_library#libweb/WEB-INF/urlrewrite.xml
+ *
+ *  <urlrewrite>
+ *      <rule>
+ *          <from>.*</from>
+ *          <set type="response-header" name="X-PRIMO-FE-ENVIRONMENT">sandbox</set>
+ *      </rule>
+ *  </urlrewrite>
+ *
+ *  replace 'sandbox' with the name you want to give to your frontend
  * @method _getFrontEndID
  * @return {String} FrontEnd ID
  * @private

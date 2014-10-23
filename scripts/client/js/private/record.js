@@ -23,7 +23,8 @@ function _record(i) {
 
     record.getDedupedRecordIds =  function(){ return _getRecordIdInDedupRecord(record.id).data() };
 
-    record.isRemoteRecord = (function(){ return (record.id.substring(0, 2) === 'TN')})();
+    record.isRemoteRecord = function(){ return (record.id.substring(0, 2) === 'TN')};
+    record.isOnEShelf = function(){ return record.find('.EXLMyShelfStar a').attr('href').search('fn=remove') != -1};
 
     record.getData = function(){
         if(!recordData){

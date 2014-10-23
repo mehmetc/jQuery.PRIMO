@@ -88,12 +88,12 @@ If you would want to compile jquery.PRIMO.js then follow these steps
 
 #### Check if the current user is logged in
 ```js
-    jQuery.PRIMO.session.user.isLoggedIn;    
+    jQuery.PRIMO.session.user.isLoggedIn();    
 ```
 
 #### Check if the current user is on campus
 ```js
-    jQuery.PRIMO.session.user.isOnCampus;    
+    jQuery.PRIMO.session.user.isOnCampus();    
 ```
 ###**VIEW**<a name="view"></a>
 #### Get the current view code
@@ -118,12 +118,13 @@ If you would want to compile jquery.PRIMO.js then follow these steps
 
 #### Is the current view in full display mode
 ```js
-    jQuery.PRIMO.session.view.isFullDisplay;    
+    jQuery.PRIMO.session.view.isFullDisplay();    
 ```
 
 #### Get the current view frontend id
+The file: 
   <pre>/exlibris/primo/p4_1/ng/primo/home/system/tomcat/search/webapps/primo_library#libweb/WEB-INF/urlrewrite.xml</pre>
-  must contain
+must contain
 ```xml 
    <urlrewrite>
        <rule>
@@ -133,7 +134,7 @@ If you would want to compile jquery.PRIMO.js then follow these steps
    </urlrewrite>
 ```
 
-Then you can query the frontend id   
+Then you can get the frontend id   
 
 ```js
     jQuery.PRIMO.session.view.frontEndID;    
@@ -143,17 +144,17 @@ Then you can query the frontend id
 
 ####Get IP address as seen on PRIMO
 ```js
-    jQuery.PRIMO.session.ip.address
+    jQuery.PRIMO.session.ip.address;
 ```
 
 ####Get institution name by IP 
 ```js
-    jQuery.PRIMO.session.ip.institution.name
+    jQuery.PRIMO.session.ip.institution.name;
 ```
 
 ####Get institution code by IP 
 ```js
-    jQuery.PRIMO.session.ip.institution.code
+    jQuery.PRIMO.session.ip.institution.code;
 ```    
 
 ##**RECORDS**<a name="records"></a>
@@ -161,7 +162,7 @@ Then you can query the frontend id
 
 #### Get number of records on screen (this is an Array)
 ```js
-    jQuery.PRIMO.records.length
+    jQuery.PRIMO.records.length;
 ```
 
 #### Get the record id of the 6th field
@@ -196,7 +197,12 @@ Then you can query the frontend id
 
 #### Is the 6th record a remote record
 ```js
-    jQuery.PRIMO.records[5].isRemoteRecord;
+    jQuery.PRIMO.records[5].isRemoteRecord();
+```
+
+#### Is the 6th record on the eShelf
+```js
+    jQuery.PRIMO.records[5].isOnEShelf();
 ```
 
 #### Get the PNX data as text,json,xml of the 6th record
@@ -208,12 +214,12 @@ Then you can query the frontend id
 
 #### Get the material type of the first record
 ```js
-    jQuery.PRIMO.records[0].getData().display.type
+    jQuery.PRIMO.records[0].getData().display.type;
 ```
 
 #### Get all record ids for a deduped record
 ```js
-    jQuery.PRIMO.records[2].getDedupedRecordIds()
+    jQuery.PRIMO.records[2].getDedupedRecordIds();
 ```
 
 #### Highlight all journals on screen
@@ -272,7 +278,7 @@ Then you can query the frontend id
                     var tab_content = "";
                     var details_url = $(record.tabs).filter('.EXLDetailsTab').find('a').attr('href');
     
-                    tab_content += "<div style='overflow:auto;height:100%;padding:20px;'>"
+                    tab_content += "<div style='overflow:auto;height:100%;padding:20px;'>";
                     tab_content += '  <div class="share_options_import"></div>';
                     tab_content += '</div>';
     
@@ -289,18 +295,21 @@ Then you can query the frontend id
                             if (citation){
                                 html.filter('.EXLButtonSendToCitation').find('a').attr('onclick', html.filter('.EXLButtonSendToCitation').find('a').attr('onclick').replace(/-1/g, record.index));
                             }
+                            
                             $('.share_options_import').empty().append(html);
+                            
+                            eshelfUpdate(record.children(), record.isOnEShelf());
                         }, 'html'
                     );
     
                     details_url = 'http://' + location.hostname + location.pathname.substr(0, location.pathname.lastIndexOf('/')) + '/display.do?tabs=detailsTab&ct=display&fn=search&doc=' + record.id + "&recIds=" + record.id;
     
-                    tab.open(tab_content, {reload:true, url:details_url});
+                    tab.open(tab_content, {reload:false, url:details_url});
                 }
             }
         });
        }
-    );        
+    );                
 ```          
       
 #### Open an URL in the tab of the first record
@@ -341,8 +350,28 @@ Then you can query the frontend id
   
 #### Get the link behind the details tab
 ```js
-  jQuery.PRIMO.records[5].tabs.getByName('Details').find('a').attr('href');
+    jQuery.PRIMO.records[5].tabs.getByName('Details').find('a').attr('href');
 ```  
+    
+#### Get the name of the first tab
+```js
+    jQuery.PRIMO.records[5].tabs[0].name;    
+```    
+
+#### Get the index of the first tab
+```js
+    jQuery.PRIMO.records[5].tabs[0].index;
+```    
+
+#### Get the container of the second tab
+```js
+   jQuery.PRIMO.records[5].tabs[1].container;
+```
+    
+#### Check if tab is open
+```js
+    jQuery.PRIMO.records[5].tabs[4].isOpen();
+```    
     
 ##**SEARCH**<a name="search"></a>  
 #### Search for water 

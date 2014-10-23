@@ -17,7 +17,11 @@ var _getSessionData = (function() {
               dataType: 'json',
               url: '/primo_library/libweb/remote_session_data_helper.jsp'
             }).done(function(data, textStatus, jqXHR){
-                sessionData = data;
+                sessionData = jQuery.extend(true, {}, data);
+
+                sessionData.user.isLoggedIn = function(){return data.user.isLoggedIn;};
+                sessionData.user.isOnCampus = function(){return data.user.isOnCampus;};
+
             }).fail(function(data, textStatus, jqXHR){
                 // Fallback when file is not available. Maybe we should not do this.
                 //TODO: do we need this?
@@ -34,9 +38,9 @@ var _getSessionData = (function() {
             });
 
             $.extend(sessionData.view,{
-                  isFullDisplay: (function () {
+                  isFullDisplay: function () {
                       return window.isFullDisplay();
-                  })(),
+                  },
 
                   frontEndID: (function () {
                       return _getFrontEndID.data();

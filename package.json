@@ -1,6 +1,6 @@
 {
   "name": "jQuery.PRIMO.js",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "A client side convenience library for PRIMO",
   "author": "Mehmet Celik <mehmet.celik@libis.kuleuven.be> (http://www.libis.be))",
   "license": "MIT",

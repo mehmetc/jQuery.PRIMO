@@ -63,7 +63,7 @@ function _tab(record, i) {
             currentTab.container.show();
 
             if ((!currentTab.container.data('loaded')) || (o.reload)) {
-                var popOut = '<div class="EXLTabHeaderContent">' + o.headerContent + '</div><div class="EXLTabHeaderButtons"><ul><li class="EXLTabHeaderButtonPopout"><span></span><a href="' + o.url + '" target="_blank"><img src="../images/icon_popout_tab.png" /></a></li><li></li><li class="EXLTabHeaderButtonCloseTabs"><a href="#" title="hide tabs"><img src="../images/icon_close_tabs.png" alt="hide tabs"></a></li></ul></div>';
+                var popOut = '<div class="EXLTabHeaderContent">' + o.headerContent + '</div><div class="EXLTabHeaderButtons"><ul><li class="EXLTabHeaderButtonPopout"><a href="' + o.url + '" target="_blank"><img src="../images/icon_popout_tab.png" /></a></li><li></li><li class="EXLTabHeaderButtonCloseTabs"><a href="#" title="hide tabs"><img src="../images/icon_close_tabs.png" alt="hide tabs"></a></li></ul></div>';
                 var header = '<div class="EXLTabHeader">' + popOut + '</div>';
                 var body = '<div class="EXLTabContent">' + content + '</div>'
                 currentTab.container.html(header + body);
@@ -130,7 +130,7 @@ function _tabs(record) {
  * @method _addTab
  * @private
  * @param {String} tabName name of tab
- * @param {Hash} [options] a hash with any of these {record, state:'enabled/disabled', css, url:'#', tooltip, headerContent, click:callbackFunction}
+ * @param {Hash} [options] a hash with any of these {record, state:'enabled/disabled', css, url:'#', url_target: '_blank', tooltip, headerContent, click:callbackFunction}
  * @example
  * jQuery.PRIMO.records[0].tabs.add('my Tab',
  {state:'enabled', click:function(event, tab, record, options){

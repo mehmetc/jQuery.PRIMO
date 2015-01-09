@@ -25,6 +25,7 @@ function _record(i) {
 
     record.isRemoteRecord = function(){ return (record.id.substring(0, 2) === 'TN')};
     record.isOnEShelf = function(){ return record.find('.EXLMyShelfStar a').attr('href').search('fn=remove') != -1};
+    record.isDedupedRecord = function(){return _getIsDedupRecord(record.id)};
 
     record.getData = function(){
         if(!recordData){
@@ -57,31 +58,56 @@ var _getPNXData = function (recordID, type) {
         type = 'text'
     }
 
-    jQuery.ajax(
-        {
-            async: false,
-            type: 'get',
-            dataType: 'xml',
-            //url: '/primo_library/libweb/showPNX.jsp?id=' + recordIndex,
-            url: '/primo_library/libweb/action/display.do?vid=' + jQuery.PRIMO.session.view.code + '&showPnx=true&pds_handle=GUEST&doc=' + recordID,
-            success: function (data, event, xhr) {
-
-                if (xhr.getResponseHeader('Content-Type').search(/xml/) >= 0) {
-                    switch (type) {
-                        case 'text':
-                            pnx = _xml2text(data);
-                            break;
-                        case 'json':
-                            pnx = $(_xml2json(data));
-                            break;
-                        default:
-                            pnx = $(data);
-                    }
-                } else {
-                    alert('PDS redirect detected. Do not know how to handle that, yet.');
+    jQuery.ajax({
+        async: false,
+        type: 'get',
+        dataType: 'xml',
+        url: jQuery.PRIMO.parameters.base_path + '/record_helper.jsp?id=' + recordID + '.pnx',
+        success: function(data, event, xhr){
+            if (xhr.getResponseHeader('Content-Type').search(/xml/) >= 0) {
+                switch (type) {
+                    case 'text':
+                        pnx = _xml2text(data);
+                        break;
+                    case 'json':
+                        pnx = $(_xml2json(data));
+                        break;
+                    default:
+                        pnx = $(data);
                 }
+            } else {
+                alert('PDS redirect detected. Do not know how to handle that, yet.');
             }
-        });
+        },
+        error:function(jqXHR, textStatus, errorThrown){ //fall back to default
+            jQuery.ajax(
+                {
+                    async: false,
+                    type: 'get',
+                    dataType: 'xml',
+                    url: '/primo_library/libweb/action/display.do?vid=' + jQuery.PRIMO.session.view.code + '&showPnx=true&pds_handle=GUEST&doc=' + recordID,
+                    success: function (data, event, xhr) {
+
+                        if (xhr.getResponseHeader('Content-Type').search(/xml/) >= 0) {
+                            switch (type) {
+                                case 'text':
+                                    pnx = _xml2text(data);
+                                    break;
+                                case 'json':
+                                    pnx = $(_xml2json(data));
+                                    break;
+                                default:
+                                    pnx = $(data);
+                            }
+                        } else {
+                            alert('PDS redirect detected. Do not know how to handle that, yet.');
+                        }
+                    }
+                });
+        }
+
+    });
+
     if ($.isArray(pnx)) {
         return pnx[0];
     } else {
@@ -119,7 +145,7 @@ function _getRecordIdInDedupRecord(id) {
                         type: 'get',
                         dataType: 'json',
                         data: {"id": id},
-                        url: '/primo_library/libweb/dedup_records_helper.jsp'
+                        url: jQuery.PRIMO.parameters.base_path +'/dedup_records_helper.jsp'
                     }).done(function(data, textStatus, jqXHR){
                         dedupRecordIds = data;
                     }).fail(function(data, textStatus, jqXHR){

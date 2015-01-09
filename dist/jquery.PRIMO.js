@@ -8,6 +8,13 @@
  */
 
 /**
+ * @namespace jQuery.PRIMO
+ */
+jQuery.PRIMO = {
+    parameters: {base_path: '/primo_library/libweb'}
+};
+
+/**
  * Private method to build a pointer to the record and enhance it
  * @method _record
  * @private
@@ -34,6 +41,7 @@ function _record(i) {
 
     record.isRemoteRecord = function(){ return (record.id.substring(0, 2) === 'TN')};
     record.isOnEShelf = function(){ return record.find('.EXLMyShelfStar a').attr('href').search('fn=remove') != -1};
+    record.isDedupedRecord = function(){return _getIsDedupRecord(record.id)};
 
     record.getData = function(){
         if(!recordData){
@@ -66,31 +74,56 @@ var _getPNXData = function (recordID, type) {
         type = 'text'
     }
 
-    jQuery.ajax(
-        {
-            async: false,
-            type: 'get',
-            dataType: 'xml',
-            //url: '/primo_library/libweb/showPNX.jsp?id=' + recordIndex,
-            url: '/primo_library/libweb/action/display.do?vid=' + jQuery.PRIMO.session.view.code + '&showPnx=true&pds_handle=GUEST&doc=' + recordID,
-            success: function (data, event, xhr) {
-
-                if (xhr.getResponseHeader('Content-Type').search(/xml/) >= 0) {
-                    switch (type) {
-                        case 'text':
-                            pnx = _xml2text(data);
-                            break;
-                        case 'json':
-                            pnx = $(_xml2json(data));
-                            break;
-                        default:
-                            pnx = $(data);
-                    }
-                } else {
-                    alert('PDS redirect detected. Do not know how to handle that, yet.');
+    jQuery.ajax({
+        async: false,
+        type: 'get',
+        dataType: 'xml',
+        url: jQuery.PRIMO.parameters.base_path + '/record_helper.jsp?id=' + recordID + '.pnx',
+        success: function(data, event, xhr){
+            if (xhr.getResponseHeader('Content-Type').search(/xml/) >= 0) {
+                switch (type) {
+                    case 'text':
+                        pnx = _xml2text(data);
+                        break;
+                    case 'json':
+                        pnx = $(_xml2json(data));
+                        break;
+                    default:
+                        pnx = $(data);
                 }
+            } else {
+                alert('PDS redirect detected. Do not know how to handle that, yet.');
             }
-        });
+        },
+        error:function(jqXHR, textStatus, errorThrown){ //fall back to default
+            jQuery.ajax(
+                {
+                    async: false,
+                    type: 'get',
+                    dataType: 'xml',
+                    url: '/primo_library/libweb/action/display.do?vid=' + jQuery.PRIMO.session.view.code + '&showPnx=true&pds_handle=GUEST&doc=' + recordID,
+                    success: function (data, event, xhr) {
+
+                        if (xhr.getResponseHeader('Content-Type').search(/xml/) >= 0) {
+                            switch (type) {
+                                case 'text':
+                                    pnx = _xml2text(data);
+                                    break;
+                                case 'json':
+                                    pnx = $(_xml2json(data));
+                                    break;
+                                default:
+                                    pnx = $(data);
+                            }
+                        } else {
+                            alert('PDS redirect detected. Do not know how to handle that, yet.');
+                        }
+                    }
+                });
+        }
+
+    });
+
     if ($.isArray(pnx)) {
         return pnx[0];
     } else {
@@ -128,7 +161,7 @@ function _getRecordIdInDedupRecord(id) {
                         type: 'get',
                         dataType: 'json',
                         data: {"id": id},
-                        url: '/primo_library/libweb/dedup_records_helper.jsp'
+                        url: jQuery.PRIMO.parameters.base_path +'/dedup_records_helper.jsp'
                     }).done(function(data, textStatus, jqXHR){
                         dedupRecordIds = data;
                     }).fail(function(data, textStatus, jqXHR){
@@ -257,58 +290,141 @@ function _search() {
     }
 }
 /**
+ * Reads the FrontEndID from the X-PRIMO-FE-ENVIRONMENT header
+ * create or add to /exlibris/primo/p4_1/ng/primo/home/system/tomcat/search/webapps/primo_library#libweb/WEB-INF/urlrewrite.xml
+ *
+ *  <urlrewrite>
+ *      <rule>
+ *          <from>.*</from>
+ *          <set type="response-header" name="X-PRIMO-FE-ENVIRONMENT">sandbox</set>
+ *      </rule>
+ *  </urlrewrite>
+ *
+ *  replace 'sandbox' with the name you want to give to your frontend
+ * @method _getFrontEndID
+ * @return {String} FrontEnd ID
+ * @private
+ */
+var _getFrontEndID = (function () {
+    var FEID = null;
+
+    return {
+        data: function () {
+            if (!FEID) {
+                FEID = 'unknown';
+                jQuery.ajax(
+                    {
+                        async: false,
+                        type: 'get',
+                        url: '/primo_library/libweb/static_htmls/header.html',
+                        complete: function (xhr, status) {
+                            FEID = xhr.getResponseHeader('X-PRIMO-FE-ENVIRONMENT');
+                        }
+                    });
+            }
+            return FEID;
+        }
+    }
+})();
+
+/**
+ * Retrieves user id, name and if user is logged in
+ * @method _getUserInfo
+ * @returns {Object} returns a User object.
+ * @description There is also a native window.getUserInfo() method it does exactly the same thing but is less efficient.
+ * @private
+ */
+var _getUserInfo = (function () {
+    var user = null;
+    return {
+        data: function () {
+            if (!user) {
+                user = {};
+                jQuery.ajax(
+                    {
+                        async: false,
+                        type: 'get',
+                        dataType: 'xml',
+                        url: '/primo_library/libweb/getUserInfoServlet',
+                        success: function (data, event, xhr) {
+                            user.id = jQuery(data).find('userId').text();
+                            user.name = jQuery(data).find('userName').text();
+                            user.loggedIn = jQuery(data).find('isLoggedIn').text() === 'true';
+                        }
+                    });
+            }
+
+            return user;
+        }
+    };
+})();
+
+/**
  * Retrieves session data only available on the server
  * @method _getSessionData
  * @returns {Object} returns session data.
  * @description Retrieves session data from server with fallback
  * @private
  */
-var _getSessionData = (function() {
-      var sessionData = null;
-      return {
-        data: function() {
-          if (!sessionData) {
-              sessionData = {};
+var _getSessionData = function () {
+    var sessionData = null;
+    var getSessionData = function () {
+        if (!sessionData) {
+            sessionData = {};
             jQuery.ajax({
-              async: false,
-              type: 'get',
-              dataType: 'json',
-              url: '/primo_library/libweb/remote_session_data_helper.jsp'
-            }).done(function(data, textStatus, jqXHR){
-                sessionData = jQuery.extend(true, {}, data);
+                async: false,
+                type: 'get',
+                dataType: 'json',
+                url: jQuery.PRIMO.parameters.base_path + '/remote_session_data_helper.jsp',
+                success: function (data, textStatus, jqXHR) {
+                    sessionData = jQuery.extend(true, {}, data);
 
-                sessionData.user.isLoggedIn = function(){return data.user.isLoggedIn;};
-                sessionData.user.isOnCampus = function(){return data.user.isOnCampus;};
-
-            }).fail(function(data, textStatus, jqXHR){
-                // Fallback when file is not available. Maybe we should not do this.
-                //TODO: do we need this?
-                sessionData = {
-                    view: {code: $('#vid').val()},
-                    user: {
-                        id: _getUserInfo.data().id,
-                        name: _getUserInfo.data().name,
-                        isLoggedIn: function () {
-                            return _getUserInfo.data().loggedIn;
+                    sessionData.user.isLoggedIn = function () {
+                        return data.user.isLoggedIn;
+                    };
+                    sessionData.user.isOnCampus = function () {
+                        return data.user.isOnCampus;
+                    };
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    // Fallback when file is not available. Maybe we should not do this.
+                    //TODO: do we need this?
+                    sessionData = {
+                        view: {code: $('#vid').val()},
+                        user: {
+                            id: _getUserInfo.data().id,
+                            name: _getUserInfo.data().name,
+                            isLoggedIn: function () {
+                                return _getUserInfo.data().loggedIn;
+                            }
                         }
                     }
                 }
+
             });
 
-            $.extend(sessionData.view,{
-                  isFullDisplay: function () {
-                      return window.isFullDisplay();
-                  },
+            $.extend(sessionData.view, {
+                isFullDisplay: function () {
+                    return window.isFullDisplay();
+                },
 
-                  frontEndID: (function () {
-                      return _getFrontEndID.data();
-                  }())
-              });
+                frontEndID: (function () {
+                    return _getFrontEndID.data();
+                }())
+            });
+
+            sessionData.reload = function () {
+                sessionData = null;
+                jQuery.PRIMO.session = getSessionData();
+                return sessionData;
+            }
+
             return sessionData;
-          }
         }
-      }
-})();
+    };
+
+    return getSessionData();
+};
 
 /**
  * Private method to get information on a single tab
@@ -375,7 +491,7 @@ function _tab(record, i) {
             currentTab.container.show();
 
             if ((!currentTab.container.data('loaded')) || (o.reload)) {
-                var popOut = '<div class="EXLTabHeaderContent">' + o.headerContent + '</div><div class="EXLTabHeaderButtons"><ul><li class="EXLTabHeaderButtonPopout"><span></span><a href="' + o.url + '" target="_blank"><img src="../images/icon_popout_tab.png" /></a></li><li></li><li class="EXLTabHeaderButtonCloseTabs"><a href="#" title="hide tabs"><img src="../images/icon_close_tabs.png" alt="hide tabs"></a></li></ul></div>';
+                var popOut = '<div class="EXLTabHeaderContent">' + o.headerContent + '</div><div class="EXLTabHeaderButtons"><ul><li class="EXLTabHeaderButtonPopout"><a href="' + o.url + '" target="_blank"><img src="../images/icon_popout_tab.png" /></a></li><li></li><li class="EXLTabHeaderButtonCloseTabs"><a href="#" title="hide tabs"><img src="../images/icon_close_tabs.png" alt="hide tabs"></a></li></ul></div>';
                 var header = '<div class="EXLTabHeader">' + popOut + '</div>';
                 var body = '<div class="EXLTabContent">' + content + '</div>'
                 currentTab.container.html(header + body);
@@ -442,7 +558,7 @@ function _tabs(record) {
  * @method _addTab
  * @private
  * @param {String} tabName name of tab
- * @param {Hash} [options] a hash with any of these {record, state:'enabled/disabled', css, url:'#', tooltip, headerContent, click:callbackFunction}
+ * @param {Hash} [options] a hash with any of these {record, state:'enabled/disabled', css, url:'#', url_target: '_blank', tooltip, headerContent, click:callbackFunction}
  * @example
  * jQuery.PRIMO.records[0].tabs.add('my Tab',
  {state:'enabled', click:function(event, tab, record, options){
@@ -692,83 +808,12 @@ function _xml2text(xmlDoc){
 }
 
 /**
- * Retrieves user id, name and if user is logged in
- * @method _getUserInfo
- * @returns {Object} returns a User object.
- * @description There is also a native window.getUserInfo() method it does exactly the same thing but is less efficient.
- * @private
- */
-var _getUserInfo = (function () {
-    var user = null;
-    return {
-        data: function () {
-            if (!user) {
-                user = {};
-                jQuery.ajax(
-                    {
-                        async: false,
-                        type: 'get',
-                        dataType: 'xml',
-                        url: '/primo_library/libweb/getUserInfoServlet',
-                        success: function (data, event, xhr) {
-                            user.id = $(data).find('userId').text();
-                            user.name = $(data).find('userName').text();
-                            user.loggedIn = $(data).find('isLoggedIn').text() === 'true';
-                        }
-                    });
-            }
-
-            return user;
-        }
-    };
-})();
-/**
- * Reads the FrontEndID from the X-PRIMO-FE-ENVIRONMENT header
- * create or add to /exlibris/primo/p4_1/ng/primo/home/system/tomcat/search/webapps/primo_library#libweb/WEB-INF/urlrewrite.xml
- *
- *  <urlrewrite>
- *      <rule>
- *          <from>.*</from>
- *          <set type="response-header" name="X-PRIMO-FE-ENVIRONMENT">sandbox</set>
- *      </rule>
- *  </urlrewrite>
- *
- *  replace 'sandbox' with the name you want to give to your frontend
- * @method _getFrontEndID
- * @return {String} FrontEnd ID
- * @private
- */
-var _getFrontEndID = (function () {
-    var FEID = null;
-
-    return {
-        data: function () {
-            if (!FEID) {
-                FEID = 'unknown';
-                jQuery.ajax(
-                    {
-                        async: false,
-                        type: 'get',
-                        url: '/primo_library/libweb/static_htmls/header.html',
-                        complete: function (xhr, status) {
-                            FEID = xhr.getResponseHeader('X-PRIMO-FE-ENVIRONMENT');
-                        }
-                    });
-            }
-            return FEID;
-        }
-    }
-})();
-/**
  *
  * An ExLibris PRIMO convinience Library
  */
 
-/**
- * @namespace jQuery.PRIMO
- */
-jQuery.PRIMO = {
-    session: (function() {return _getSessionData.data()})(),
+jQuery.extend(jQuery.PRIMO, {
+    session: _getSessionData(),
     records: (function () {
         var records_count = jQuery('.EXLResult').length;
         var data = [];
@@ -778,7 +823,10 @@ jQuery.PRIMO = {
         return $(data);
     }()),
     search: _search(),
-    version: "0.0.5"
-};
+    version: "0.0.6",
+    reload: function(){
+        jQuery.PRIMO.session.reload();
+    }
+});
 
 })(jQuery);

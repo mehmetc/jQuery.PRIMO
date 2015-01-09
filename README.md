@@ -55,6 +55,11 @@ If you would want to compile jquery.PRIMO.js then follow these steps
     jQuery.PRIMO.version;
 ```
 
+#### Reload jQuery.PRIMO
+```js
+    jQuery.PRIMO.reload();
+```
+
 ##**SESSION**<a name="session"></a>
 - [user](#user)
 - [view](#view)
@@ -68,6 +73,11 @@ If you would want to compile jquery.PRIMO.js then follow these steps
 #### Get the session id
 ```js
     jQuery.PRIMO.session.sessionId;
+```
+
+#### Reload session data
+```js
+    jQuery.PRIMO.session.reload();
 ```
 
 ###**USER**<a name="user"></a>
@@ -215,6 +225,11 @@ Then you can get the frontend id
 #### Get the material type of the first record
 ```js
     jQuery.PRIMO.records[0].getData().display.type;
+```
+
+#### Check if 6th record was deduped
+```js
+    jQuery.PRIMO.records[5].isDedupedRecord();
 ```
 
 #### Get all record ids for a deduped record

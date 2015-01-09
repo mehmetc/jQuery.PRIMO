@@ -3,11 +3,8 @@
  * An ExLibris PRIMO convinience Library
  */
 
-/**
- * @namespace jQuery.PRIMO
- */
-jQuery.PRIMO = {
-    session: (function() {return _getSessionData.data()})(),
+jQuery.extend(jQuery.PRIMO, {
+    session: _getSessionData(),
     records: (function () {
         var records_count = jQuery('.EXLResult').length;
         var data = [];
@@ -17,5 +14,8 @@ jQuery.PRIMO = {
         return $(data);
     }()),
     search: _search(),
-    version: "<%= version %>"
-};
+    version: "<%= version %>",
+    reload: function(){
+        jQuery.PRIMO.session.reload();
+    }
+});

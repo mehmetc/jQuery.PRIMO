@@ -9,7 +9,7 @@ var bump        = require('gulp-bump');
 var template    = require('gulp-template');
 
 var paths = {
-    scripts: ['scripts/client/js/header.js', 'scripts/client/js/util.js', 'scripts/client/js/private/**/*.js', 'scripts/client/js/primo.js']
+    scripts: ['scripts/client/js/header.js', 'scripts/client/js/util.js', 'scripts/client/js/private/**/*.js', 'scripts/client/js/primo.js', 'scripts/client/js/footer.js']
 };
 
 var getPackageJson = function () {

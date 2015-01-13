@@ -18,7 +18,7 @@ function _record(i) {
     record.materialType = function(){return _materialType(record)};
 
 // methods
-    record.getIt1 = function(){ return _getGetIt(record);} // needs tabs
+    record.getIt1 = function(){ return _getGetIt(record);}; // needs tabs
 
 
     record.getDedupedRecordIds =  function(){ return _getRecordIdInDedupRecord(record.id).data() };
@@ -43,12 +43,12 @@ function _record(i) {
     };
 
     return record;
-};
+}
 
 /**
  * @method _getPNXData
  * @param {String} recordID - The record id
- * @params {String} type - The type of response to return can be one of text,json or xml. XML is the default
+ * @param {String} type - The type of response to return can be one of text,json or xml. XML is the default
  * @returns {Object} PNX record
  * @private
  */
@@ -124,7 +124,7 @@ var _getPNXData = function (recordID, type) {
  */
 function _getIsDedupRecord(id) {
     return id.search(/^dedupmrg/) != -1;
-};
+}
 
 /**
  * Private method to retrieve record id's of a deduped record
@@ -169,7 +169,7 @@ function _getRecordIdInDedupRecord(id) {
 function _materialType(record) {
     //return _getPNXData(record.id, 'json').display.type;
     return record.getData().display.type;
-};
+}
 
 
 /**
@@ -179,7 +179,6 @@ function _materialType(record) {
  * @private
  */
 function _getGetIt(record){
-    var getIt = [];
     var view_online = record.tabs.getByName('ViewOnline');
     var url = '';
 

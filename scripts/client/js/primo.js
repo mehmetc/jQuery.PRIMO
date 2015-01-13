@@ -3,7 +3,6 @@
  * An ExLibris PRIMO convinience Library
  */
 
-jQuery(document).ready(function() {  // wait until pageload is done.
     jQuery.extend(jQuery.PRIMO, {
         session: _getSessionData(),
         records: (function () {
@@ -19,4 +18,3 @@ jQuery(document).ready(function() {  // wait until pageload is done.
             jQuery.PRIMO.session.reload();
         }
     });
-});

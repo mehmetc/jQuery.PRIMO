@@ -17,9 +17,10 @@ function _search() {
                 throw 'You must supply a record id'
             }
 
-            var institution = options !== undefined ? options['institution'] : jQuery.PRIMO.session.view.code;
-            var index       = options !== undefined ? options['index'] : 1;
-            var bulkSize    = options !== undefined ? options['bulkSize'] : 10;
+            var institution = (options !== undefined) && (options['institution'] !== undefined) ? options['institution'] : jQuery.PRIMO.session.view.code;
+            var index       = (options !== undefined) && (options['index'] !== undefined) ? options['index'] : 1;
+            var bulkSize    = (options !== undefined) && (options['bulkSize'] !== undefined) ? options['bulkSize'] : 10;
+
 
             var result      = [];
 
@@ -42,9 +43,9 @@ function _search() {
          * @returns {Object} record hash
          */
         by_query: function(query, options) {
-            var institution = options !== undefined ? options['institution'] : jQuery.PRIMO.session.view.code;
-            var index       = options !== undefined ? options['index'] : 1;
-            var bulkSize    = options !== undefined ? options['bulkSize'] : 10;
+            var institution = (options !== undefined) && (options['institution'] !== undefined) ? options['institution'] : jQuery.PRIMO.session.view.code;
+            var index       = (options !== undefined) && (options['index'] !== undefined) ? options['index'] : 1;
+            var bulkSize    = (options !== undefined) && (options['bulkSize'] !== undefined) ? options['bulkSize'] : 10;
 
             if (Array.isArray(query)){
                 jQuery.each(query, function(index, value){

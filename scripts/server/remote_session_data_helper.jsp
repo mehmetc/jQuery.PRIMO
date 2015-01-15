@@ -10,6 +10,7 @@
 <%@page import="com.exlibris.primo.pds.PdsUserInfo"%>
 <%@page import="com.exlibris.primo.server.facade.ViewsManagementFacade"%>
 <%@page import="com.exlibris.primo.utils.SessionUtils"%>
+<%@page import="com.exlibris.primo.utils.UserContext"%>
 <%@page import="java.net.InetAddress"%>
 <%@page import="java.util.ArrayList"%>
 <%@page import="java.util.List"%>
@@ -28,7 +29,8 @@ try{
             userObj.put("id", userInfo.getUserId());
             userObj.put("name", userInfo.getUserName());
             userObj.put("email", userInfo.getEmail());
-            userObj.put("isOnCampus",Boolean.valueOf(SessionUtils.getOnCampus(request)).booleanValue());
+            //userObj.put("isOnCampus",Boolean.valueOf(SessionUtils.getOnCampus(request)).booleanValue());
+            userObj.put("isOnCampus",Boolean.valueOf(UserContext.isOnCampus(request)).booleanValue());
             userObj.put("isLoggedIn",SessionUtils.getIsLoggedIn(request));
     }
 

@@ -134,19 +134,15 @@ If you would want to compile jquery.PRIMO.js then follow these steps
 ```
 
 #### Get the current view frontend id
-The file: 
-  <pre>/exlibris/primo/p4_1/ng/primo/home/system/tomcat/search/webapps/primo_library#libweb/WEB-INF/urlrewrite.xml</pre>
-must contain
-```xml 
-   <urlrewrite>
-       <rule>
-           <from>.*</from>
-           <set type="response-header" name="X-PRIMO-FE-ENVIRONMENT">sandbox</set>
-       </rule>
-   </urlrewrite>
+The file:
 ```
+  jqprimo/helpers/frontend_id
+```
+should contain a marker for the frontend where jQuery.PRIMO is installed.
+For example:
+    staging or test or 1 or ...
 
-Then you can get the frontend id   
+Then you can get the frontend id this can be handy when you are debugging
 
 ```js
     jQuery.PRIMO.session.view.frontEndID;    
@@ -260,7 +256,6 @@ Then you can get the frontend id
             } catch (e) {
                 console.log('Error setting url');
             }
-            
         }
     );    
 ```

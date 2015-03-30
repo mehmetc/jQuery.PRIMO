@@ -5,6 +5,8 @@ A client side convenience library for PRIMO v4.6 and better.
 This is a work in progress. This might not work for you at all but if more people use it the better it will get. 
 If you want a feature, have a comment, found a bug or just want to talk ping me.  
 
+See the [releases](https://github.com/mehmetc/jQuery.PRIMO/releases) for downloads and release notes
+
 
 Installation  (TODO)
 ------------
@@ -405,4 +407,4 @@ Then you can get the frontend id
 - Send a pull request.
       
 # License
-MIT (c) 2014 KULeuven/LIBIS written by Mehmet Celik     
+MIT (c) 2015 KULeuven/LIBIS written by Mehmet Celik

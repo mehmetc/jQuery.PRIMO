@@ -22,7 +22,6 @@
  The hibernate mapping file will be overwritten after each update this means you need to reapply this patch
  after every Primo upgrade.
 */
-
 String   record     = "<error>no record</error>";
 
 try {

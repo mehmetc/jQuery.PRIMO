@@ -11,7 +11,7 @@
  * @namespace jQuery.PRIMO
  */
     jQuery.PRIMO = {
-        parameters: {base_path: '/primo_library/libweb'}
+        parameters: {base_path: '/primo_library/libweb/jqprimo'}
     };
 
 
@@ -79,7 +79,7 @@ var _getPNXData = function (recordID, type) {
         async: false,
         type: 'get',
         dataType: 'xml',
-        url: jQuery.PRIMO.parameters.base_path + '/record_helper.jsp?id=' + recordID + '.pnx',
+        url: jQuery.PRIMO.parameters.base_path + '/helpers/record_helper.jsp?id=' + recordID + '.pnx',
         success: function(data, event, xhr){
             if (xhr.getResponseHeader('Content-Type').search(/xml/) >= 0) {
                 switch (type) {
@@ -162,7 +162,7 @@ function _getRecordIdInDedupRecord(id) {
                         type: 'get',
                         dataType: 'json',
                         data: {"id": id},
-                        url: jQuery.PRIMO.parameters.base_path +'/dedup_records_helper.jsp'
+                        url: jQuery.PRIMO.parameters.base_path +'/helpers/dedup_records_helper.jsp'
                     }).done(function(data, textStatus, jqXHR){
                         dedupRecordIds = data;
                     }).fail(function(data, textStatus, jqXHR){
@@ -317,9 +317,13 @@ var _getFrontEndID = (function () {
                     {
                         async: false,
                         type: 'get',
-                        url: '/primo_library/libweb/static_htmls/header.html',
-                        complete: function (xhr, status) {
-                            FEID = xhr.getResponseHeader('X-PRIMO-FE-ENVIRONMENT');
+                        dataType: 'text',
+                        url: jQuery.PRIMO.parameters.base_path + '/helpers/frontend_id',
+                        success: function (data, event, xhr) {
+                            FEID = data.trim();
+                        },
+                        error: function(){
+                            FEID='unknown';
                         }
                     });
             }
@@ -376,7 +380,7 @@ var _getSessionData = function () {
                 async: false,
                 type: 'get',
                 dataType: 'json',
-                url: jQuery.PRIMO.parameters.base_path + '/remote_session_data_helper.jsp',
+                url: jQuery.PRIMO.parameters.base_path + '/helpers/remote_session_data_helper.jsp',
                 success: function (data, textStatus, jqXHR) {
                     sessionData = jQuery.extend(true, {}, data);
 

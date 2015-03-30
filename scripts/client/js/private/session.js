@@ -25,9 +25,13 @@ var _getFrontEndID = (function () {
                     {
                         async: false,
                         type: 'get',
-                        url: '/primo_library/libweb/static_htmls/header.html',
-                        complete: function (xhr, status) {
-                            FEID = xhr.getResponseHeader('X-PRIMO-FE-ENVIRONMENT');
+                        dataType: 'text',
+                        url: jQuery.PRIMO.parameters.base_path + '/helpers/frontend_id',
+                        success: function (data, event, xhr) {
+                            FEID = data.trim();
+                        },
+                        error: function(){
+                            FEID='unknown';
                         }
                     });
             }
@@ -84,7 +88,7 @@ var _getSessionData = function () {
                 async: false,
                 type: 'get',
                 dataType: 'json',
-                url: jQuery.PRIMO.parameters.base_path + '/remote_session_data_helper.jsp',
+                url: jQuery.PRIMO.parameters.base_path + '/helpers/remote_session_data_helper.jsp',
                 success: function (data, textStatus, jqXHR) {
                     sessionData = jQuery.extend(true, {}, data);
 

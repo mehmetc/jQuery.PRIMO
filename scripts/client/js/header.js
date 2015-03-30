@@ -10,5 +10,5 @@
  * @namespace jQuery.PRIMO
  */
     jQuery.PRIMO = {
-        parameters: {base_path: '/primo_library/libweb'}
+        parameters: {base_path: '/primo_library/libweb/jqprimo'}
     };

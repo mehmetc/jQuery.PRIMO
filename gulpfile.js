@@ -18,7 +18,7 @@ var getPackageJson = function () {
 
 
 gulp.task('clean', function(cb) {
-    del(['dist', 'build'], cb);
+    del(['!dist', 'build'], cb);
 });
 
 gulp.task('bump', function(){
@@ -27,11 +27,11 @@ gulp.task('bump', function(){
         .pipe(gulp.dest('./'));
 });
 
-gulp.task('scripts', ['clean', 'build'], function(){
-    return gulp.src('./dist/jquery.PRIMO.js')
+gulp.task('scripts', ['clean', 'build', 'helpers'], function(){
+    return gulp.src('./dist/jqprimo/jquery.PRIMO.js')
         .pipe(concat('jquery.PRIMO.min.js'))
         .pipe(uglify())
-        .pipe(gulp.dest('./dist'));
+        .pipe(gulp.dest('./dist/jqprimo'));
 });
 
 gulp.task('build', function(){
@@ -40,7 +40,12 @@ gulp.task('build', function(){
         .pipe(concat('jquery.PRIMO.js'))
         .pipe(template({version: pkg.version}))
         .pipe(jqc())
-        .pipe(gulp.dest('./dist'));
+        .pipe(gulp.dest('./dist/jqprimo'));
+});
+
+gulp.task('helpers', function(){
+    return gulp.src('./scripts/server/*')
+        .pipe(gulp.dest('./dist/jqprimo/helpers'));
 });
 
 

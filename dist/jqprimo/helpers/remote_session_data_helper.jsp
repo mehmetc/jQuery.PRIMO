@@ -19,6 +19,7 @@
     This file is part of jQuery.PRIMO
     It will add extra session attributes like calling IP, institution, etc ...
 */
+
 try{
     JSONObject obj=new JSONObject();
 //GENERAL

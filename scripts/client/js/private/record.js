@@ -62,7 +62,7 @@ var _getPNXData = function (recordID, type) {
         async: false,
         type: 'get',
         dataType: 'xml',
-        url: jQuery.PRIMO.parameters.base_path + '/record_helper.jsp?id=' + recordID + '.pnx',
+        url: jQuery.PRIMO.parameters.base_path + '/helpers/record_helper.jsp?id=' + recordID + '.pnx',
         success: function(data, event, xhr){
             if (xhr.getResponseHeader('Content-Type').search(/xml/) >= 0) {
                 switch (type) {
@@ -145,7 +145,7 @@ function _getRecordIdInDedupRecord(id) {
                         type: 'get',
                         dataType: 'json',
                         data: {"id": id},
-                        url: jQuery.PRIMO.parameters.base_path +'/dedup_records_helper.jsp'
+                        url: jQuery.PRIMO.parameters.base_path +'/helpers/dedup_records_helper.jsp'
                     }).done(function(data, textStatus, jqXHR){
                         dedupRecordIds = data;
                     }).fail(function(data, textStatus, jqXHR){

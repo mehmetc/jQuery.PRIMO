@@ -18,20 +18,20 @@ but it should give you an idea of what it can be used for.
 ``` 
 Browsers are getting stricter with every release. If you get strange errors just copy the complete source into your console.    
     
-### A more permanent solution    
-- Copy the contents of scripts/server/* to fe_web 
+### A permanent solution
+- Copy the contents of the dist/* directory to fe_web
 ```bash
-    scp scripts/server/* primo@my_primo.example.com:/exlibris/primo/p4_1/ng/primo/home/system/tomcat/search/webapps/primo_library?libweb
+    scp dist/* primo@my_primo.example.com:/exlibris/primo/p4_1/ng/primo/home/system/tomcat/search/webapps/primo_library?libweb
 ```    
-- Copy jquery.PRIMO.min.js to fe_web
-```bash
-    scp dist/jquery.PRIMO.min.js primo@my_primo.example.com:/exlibris/primo/p4_1/ng/primo/home/system/tomcat/search/webapps/primo_library?libweb
-```    
-- Add jquery.PRIMO.min.js to static_htmls/footer.html or to a custom tile and add the snippet below to it
+- Add jquery.PRIMO.min.js to **static_htmls/footer.html** or to a custom tile and add the snippet below to it
 ```js    
-    <script type='text/javascript' src='/primo_library/libweb/jquery.PRIMO.min.js'></script>
+    <script type='text/javascript' src='/primo_library/libweb/jqprimo/jquery.PRIMO.min.js'></script>
 ```    
-  
+
+If you do not have shell access to your server you can use "File Uploader"(Primo Home > Primo Utilities > File Uploader)
+on the backend but you will not be able to upload the helper files. I have no solution for this besides asking ExLibris to upload these.
+
+The helper files will add extra functionality to the library like looking up records id in a deduped record, get the original record, ...
 
 Compilation  (TODO)
 -----------

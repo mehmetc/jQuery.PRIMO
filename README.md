@@ -16,7 +16,7 @@ You can inject the script into your results page, for testing. This works best u
 Open the JavaScript console and paste the next line. You will not be able to use the more advanced functions 
 but it should give you an idea of what it can be used for.
 ```js
-    $.getScript('https://raw.githubusercontent.com/mehmetc/jQuery.PRIMO/master/dist/jquery.PRIMO.js')
+    $.getScript('https://raw.githubusercontent.com/mehmetc/jQuery.PRIMO/master/dist/jqprimo/jquery.PRIMO.js')
 ``` 
 Browsers are getting stricter with every release. If you get strange errors just copy the complete source into your console.    
     

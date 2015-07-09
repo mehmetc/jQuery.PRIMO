@@ -4,7 +4,8 @@
  * @licence MIT
  * @copyright KULeuven/LIBIS 2014
  * @author Mehmet Celik <mehmet.celik@libis.kuleuven.be>
- * @description This is a dropin library for Primo. We intend to make the life of frontend developers easier.
+ * @description This is a dropin library for Primo. Made with help of the community focussing on making your life easier.
+ * extend, not reinvent
  */
 
 /**
@@ -15,6 +16,115 @@
     };
 
 
+function _query(){
+    // parse the URL
+    function parseURL(){
+        var result = window.location.search.replace(/^\?/, '').split('&').map(
+            function(el){
+                var data = el.split('=');
+                var result = {};
+                result[decodeURIComponent(data[0])] = decodeURIComponent(data[1]);
+                return result;
+            });
+
+        result.lookup = function(value){
+            var lookupResult = [];
+
+            result.forEach(function(element, index, array){
+               // var searchValue = Object.keys(element).find(function(e){ return e.contains(value)});
+                var searchValue = Object.keys(element).map(function(e){
+                    //replace with contains when available
+                    var matchesFound = e.match(value.replace(/\(/g, '\\(').replace(/\)/g, '\\)'));
+
+                    return matchesFound ? e : null;
+                }).filter(function(e){return e != null})[0];
+
+                if (searchValue && searchValue != '') {
+                    lookupResult.push(array[index][searchValue]);
+                }
+            });
+
+            return lookupResult;
+        };
+
+        return result;
+    }
+
+    var parsedURL = parseURL();
+
+    var facets = [];
+    //Get All FACETS
+    if (parsedURL.lookup('ct')[0] !== undefined){
+        var keys = parsedURL.lookup('fctN');
+        var values = parsedURL.lookup(('fctV'));
+
+        $(keys).each(function(index, element){
+            var result = {};
+            if (index <= values.length) {
+                result[element] = values[index];
+            } else {
+                result[element] = '';
+            }
+            facets.push(result);
+        });
+    }
+
+    var query = [];
+    //Get the query. only search.do for now
+    //TODO:Handle dlSearch.do
+    if (parsedURL.lookup('mode')[0] !== undefined && parsedURL.lookup('mode')[0] === 'Basic'){
+        console.log('Basic');
+        $(parsedURL.lookup('freeText')).each(function(i, el){
+            query.push({'index':'any', 'precision':'contains', 'term': el});
+        });
+    } else {
+        console.log('Advanced');
+        $(parsedURL.lookup('freeText')).each(function(i, el){
+            query.push({'index': parsedURL.lookup('UI'+i)[0], 'precision': parsedURL.lookup('StartWith'+i)[0], 'term': parsedURL.lookup('freeText'+i)[0]});
+        });
+
+        var advancedSearchKeys= {};
+        $('.EXLSearchFieldRibbonFormFieldsGroup2 input:visible,.EXLSearchFieldRibbonFormFieldsGroup2 select:visible').each(function(i,el){
+            var key = $(el).attr('id').replace(/^.*[i|I]nput_/, '').replace(/_$/,'');
+            advancedSearchKeys[key] = $(el).attr('name');
+        });
+
+        $(Object.keys(advancedSearchKeys)).each(function(i,el){
+            var key = el;
+            var value = parsedURL.lookup(advancedSearchKeys[key])[0];
+            query.push({'index': key, 'precision':'contains', 'term': decodeURIComponent(value)});
+        })
+    }
+
+
+    var searchRecordCount = parseInt(jQuery('#resultsNumbersTile em:first').text().replace(/[\s,]+/g,''));
+
+    var searchStep = parseInt($('#resultsNumbersTile span:first').text().replace(/[^\d|-]*/g,'').split('-')[1]);
+    var searchPage = 1;
+    if (Number.isNaN(searchStep)){
+        searchStep = 10;
+        searchPage = 1;
+    } else {
+        searchStep = (parseInt($('#resultsNumbersTile span:first').text().replace(/[^\d|-]*/g,'').split('-')[1]) - parseInt($('#resultsNumbersTile span:first').text().replace(/[^\d|-]*/g,'').split('-')[0])) + 1;
+        searchPage = Math.floor(parseInt($('#resultsNumbersTile span:first').text().replace(/[^\d|-]*/g,'').split('-')[1])/(searchStep));
+    }
+
+
+    return {
+        isDeeplinkSearch: function(){
+            return (window.location.href.match('dlSearch.do') != null);
+        },
+        count: searchRecordCount,
+        step: searchStep,
+        page: searchPage,
+        type: parsedURL.lookup('mode')[0],
+        tab: parsedURL.lookup('tab')[0],
+        sorted_by: parsedURL.lookup('srt')[0],
+        scope: parsedURL.lookup('scp.scps')[0],
+        facets: facets,
+        query: query
+    }
+}
 /**
  * Private method to build a pointer to the record and enhance it
  * @method _record
@@ -97,12 +207,19 @@ var _getPNXData = function (recordID, type) {
             }
         },
         error:function(jqXHR, textStatus, errorThrown){ //fall back to default
+          //  var recordIdx = jQuery.inArray(recordID ,jQuery.map(jQuery.PRIMO.records, function(n,i){return n.id;}));
+          //  var details_url = jQuery(jQuery.PRIMO.records[recordIdx].tabs).filter('.EXLDetailsTab').find('a').attr('href');
+          //  $.get(details_url, function(data){  var html = $.parseHTML(data);  console.log($(html).find('.EXLTabHeaderButtonPopout').length);},'html')
+          //  var pnx_url = jQuery.PRIMO.records[recordIdx].find('.EXLTabHeaderButtonPopout a').attr('href') + '&showPnx=true';
+
+            var pnx_url = '/primo_library/libweb/action/display.do?vid=' + jQuery.PRIMO.session.view.code + '&pds_handle=GUEST&doc=' + recordID + '&showPnx=true';
+
             jQuery.ajax(
                 {
                     async: false,
                     type: 'get',
                     dataType: 'xml',
-                    url: '/primo_library/libweb/action/display.do?vid=' + jQuery.PRIMO.session.view.code + '&showPnx=true&pds_handle=GUEST&doc=' + recordID,
+                    url: pnx_url,
                     success: function (data, event, xhr) {
 
                         if (xhr.getResponseHeader('Content-Type').search(/xml/) >= 0) {
@@ -198,9 +315,13 @@ function _materialType(record) {
 function _getGetIt(record){
     var view_online = record.tabs.getByName('ViewOnline');
     var url = '';
+    var urls = [];
+    var raw_list = [];
 
     if (view_online && view_online.length > 0){
-     url = $(view_online.find('input[id*="getitonline1"]')).val().split('O4=')[1].split('O5=')[0].replace(/delivery,.*?,/,'');
+     raw_list = $(view_online.find('input[id*="getitonline1"]')).val().split(/&O\d=/);
+     urls = $.map(raw_list, function(d){if (d.match(/^delivery/)){return d.replace(/delivery,.*?,/,'')}});
+     url = urls.length > 0 ? urls[0] : '';
     }
 
     return url;
@@ -818,7 +939,7 @@ function _xml2text(xmlDoc){
  */
 
     jQuery.extend(jQuery.PRIMO, {
-        session: _getSessionData(),
+        query: _query(),
         records: (function () {
             var data = [];
             var records_count = jQuery('.EXLResult').length;
@@ -827,7 +948,8 @@ function _xml2text(xmlDoc){
             return $(data);
         }()),
         search: _search(),
-        version: "0.0.7",
+        session: _getSessionData(),
+        version: "0.0.10",
         reload: function () {
             jQuery.PRIMO.session.reload();
         }

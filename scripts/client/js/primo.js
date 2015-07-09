@@ -4,7 +4,7 @@
  */
 
     jQuery.extend(jQuery.PRIMO, {
-        session: _getSessionData(),
+        query: _query(),
         records: (function () {
             var data = [];
             var records_count = jQuery('.EXLResult').length;
@@ -13,6 +13,7 @@
             return $(data);
         }()),
         search: _search(),
+        session: _getSessionData(),
         version: "<%= version %>",
         reload: function () {
             jQuery.PRIMO.session.reload();

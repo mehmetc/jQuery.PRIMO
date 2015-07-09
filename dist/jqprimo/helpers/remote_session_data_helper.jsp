@@ -1,5 +1,7 @@
 <%@page contentType="application/json; charset=UTF-8"%>
 <%@page import="org.json.simple.JSONObject"%>
+<%@page import="org.json.simple.parser.JSONParser"%>
+<%@page import="net.sf.json.xml.XMLSerializer"%>
 <%@page import="com.exlibris.primo.context.ContextAccess"%>
 <%@page import="com.exlibris.primo.domain.delivery.Institution"%>
 <%@page import="com.exlibris.primo.domain.delivery.InstitutionIP"%>
@@ -11,21 +13,56 @@
 <%@page import="com.exlibris.primo.server.facade.ViewsManagementFacade"%>
 <%@page import="com.exlibris.primo.utils.SessionUtils"%>
 <%@page import="com.exlibris.primo.utils.UserContext"%>
+
 <%@page import="java.net.InetAddress"%>
 <%@page import="java.util.ArrayList"%>
 <%@page import="java.util.List"%>
-<%
-/*
-    This file is part of jQuery.PRIMO
-    It will add extra session attributes like calling IP, institution, etc ...
-*/
+<%@page import="java.io.*" %>
+<%@page import="java.net.*" %>
 
+<%
 try{
     JSONObject obj=new JSONObject();
 //GENERAL
     obj.put("sessionId", SessionUtils.getSessionId(request));
-    obj.put("pdsUrl", SessionUtils.getPDSUrl(request));
 
+//PDS
+    String pdsHandle = SessionUtils.getPdsHandle(request);
+    JSONObject pdsObj = new JSONObject();
+    pdsObj.put("url", SessionUtils.getPDSUrl(request));
+
+    if (pdsHandle != null && pdsHandle != ""){
+        String pdsUrlRaw = UserContext.getLoginPDSUrlForFunction(request, "bor-info");
+        pdsObj.put("handle", pdsHandle);
+        try{
+                String[] borInfoRawUrl = pdsUrlRaw.split("&url");
+                if (borInfoRawUrl.length > 0){
+
+                        String borInfo = "";
+                        String pdsBorInfoRawURL = borInfoRawUrl[0] + "&pds_handle=" + pdsHandle;
+
+                        //pdsObj.put("borInfoURL", pdsBorInfoRawURL);
+                        URL pdsBorInfoUrl = new URL(pdsBorInfoRawURL);
+                        URLConnection urlCon = pdsBorInfoUrl.openConnection();
+                        borInfo=new XMLSerializer().readFromStream(urlCon.getInputStream()).toString(2);
+
+                        try{
+                        JSONParser parser=new JSONParser();
+                                JSONObject pds = (JSONObject)parser.parse(borInfo);
+                                pdsObj.put("borInfo", pds.get("bor-info"));
+                        } catch(Exception e){
+                                pdsObj.put("borInfo", "");
+                                pdsObj.put("borInfoRaw", borInfo);
+                        }
+
+                }
+        }
+        catch(Exception e) {
+                pdsObj.put("borInfo", "");
+        }
+    }
+
+    obj.put("pds", pdsObj);
 //USER
     PdsUserInfo userInfo = SessionUtils.getUserInfo(request);
     JSONObject userObj = new JSONObject();
@@ -34,7 +71,6 @@ try{
             userObj.put("id", userInfo.getUserId());
             userObj.put("name", userInfo.getUserName());
             userObj.put("email", userInfo.getEmail());
-            //userObj.put("isOnCampus",Boolean.valueOf(SessionUtils.getOnCampus(request)).booleanValue());
             userObj.put("isOnCampus",Boolean.valueOf(UserContext.isOnCampus(request)).booleanValue());
             userObj.put("isLoggedIn",SessionUtils.getIsLoggedIn(request));
     }
@@ -55,6 +91,7 @@ try{
         Institution institution = view.getInstitutions();
         viewInstitutionObj.put("name", institution.getInstitutionName());
         viewInstitutionObj.put("code", institution.getInstitutionCode());
+
     } catch(Exception e){
       viewInstitutionObj.put("name", "");
       viewInstitutionObj.put("code", "");

@@ -3,7 +3,8 @@
  * @licence MIT
  * @copyright KULeuven/LIBIS 2014
  * @author Mehmet Celik <mehmet.celik@libis.kuleuven.be>
- * @description This is a dropin library for Primo. We intend to make the life of frontend developers easier.
+ * @description This is a dropin library for Primo. Made with help of the community focussing on making your life easier.
+ * extend, not reinvent
  */
 
 /**

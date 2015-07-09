@@ -50,6 +50,7 @@ If you would want to compile jquery.PRIMO.js then follow these steps
 - [session](#session)
 - [records](#records)
 - [search](#search)  
+- [query](#query)
   
 ##**MISC**<a name="misc"></a>  
 #### Version of jQuery.PRIMO library
@@ -66,11 +67,7 @@ If you would want to compile jquery.PRIMO.js then follow these steps
 - [user](#user)
 - [view](#view)
 - [ip](#ip)
-
-#### Get the url for PDS
-```js
-    jQuery.PRIMO.session.pdsUrl;
-```
+- [pds](#pds)
 
 #### Get the session id
 ```js
@@ -164,6 +161,24 @@ Then you can get the frontend id this can be handy when you are debugging
 ```js
     jQuery.PRIMO.session.ip.institution.code;
 ```    
+
+##**PDS**<a name="pds"></a>
+#### Get the url for PDS
+```js
+    jQuery.PRIMO.session.pds.url;
+```
+
+#### Get PDS Handle (only available after login)
+```js
+    jQuery.PRIMO.session.pds.handle;
+```
+
+### GET borrower info _Object_ from PDS. 
+This uses General Configuration -> Installation -> PDS_URL to build the PDS access url 
+and it returns /bor/bor-info. 
+```js
+    jQuery.PRIMO.session.pds.borInfo;
+```
 
 ##**RECORDS**<a name="records"></a>
 - [tabs](#tabs)
@@ -261,6 +276,7 @@ Then you can get the frontend id this can be handy when you are debugging
 ```
 
 ##**TABS**<a name="tabs"></a>
+
 #### Add a new tab to all records
 ```js
       jQuery.PRIMO.records.each(
@@ -360,6 +376,11 @@ Then you can get the frontend id this can be handy when you are debugging
     jQuery.PRIMO.records[5].tabs.getByName('Details');
 ```   
   
+#### Programmatically click on a tab
+```js
+    jQuery.PRIMO.records[0].tabs.getByName('Details').find('a').click();
+```  
+  
 #### Get the link behind the details tab
 ```js
     jQuery.PRIMO.records[5].tabs.getByName('Details').find('a').attr('href');
@@ -393,7 +414,62 @@ Then you can get the frontend id this can be handy when you are debugging
 ```js
     var result = jQuery.PRIMO.search.by_query('any,contains,water');
 ```    
+
+##**QUERY**<a name="query"></a>
+### Get result set count
+```js
+   jQuery.PRIMO.query.count;
+```
+
+### Get current page number
+```js
+    jQuery.PRIMO.query.page;
+```
+       
+### Get number of records on page
+```js
+    jQuery.PRIMO.query.step;
+```
+should be equal to
+```js
+    jQuery.PRIMO.records.length;
+```
+
+### Get search type basic/advanced
+```js
+    jQuery.PRIMO.query.type;
+```
+
+### Get search tab
+```js
+    jQuery.PRIMO.query.tab;
+```    
+           
+### Get search sort 
+```js
+    jQuery.PRIMO.query.sorted_by;
+```               
       
+### Get query
+This will return an _Object_ or an _Array_ depending on the query.type
+```js
+    jQuery.PRIMO.query.query;
+```      
+
+### Get search scope
+```js
+    jQuery.PRIMO.query.scope;
+```
+
+### Get facets
+```js
+    jQuery.PRIMO.query.facets;
+```
+    
+### Is this a dlSearch.do search?
+```js
+    jQuery.PRIMO.query.isDeeplinkSearch();
+```    
       
 # Contributing to jQuery.PRIMO
 - Fork the project.

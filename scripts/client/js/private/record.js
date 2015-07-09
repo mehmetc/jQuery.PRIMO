@@ -80,12 +80,19 @@ var _getPNXData = function (recordID, type) {
             }
         },
         error:function(jqXHR, textStatus, errorThrown){ //fall back to default
+          //  var recordIdx = jQuery.inArray(recordID ,jQuery.map(jQuery.PRIMO.records, function(n,i){return n.id;}));
+          //  var details_url = jQuery(jQuery.PRIMO.records[recordIdx].tabs).filter('.EXLDetailsTab').find('a').attr('href');
+          //  $.get(details_url, function(data){  var html = $.parseHTML(data);  console.log($(html).find('.EXLTabHeaderButtonPopout').length);},'html')
+          //  var pnx_url = jQuery.PRIMO.records[recordIdx].find('.EXLTabHeaderButtonPopout a').attr('href') + '&showPnx=true';
+
+            var pnx_url = '/primo_library/libweb/action/display.do?vid=' + jQuery.PRIMO.session.view.code + '&pds_handle=GUEST&doc=' + recordID + '&showPnx=true';
+
             jQuery.ajax(
                 {
                     async: false,
                     type: 'get',
                     dataType: 'xml',
-                    url: '/primo_library/libweb/action/display.do?vid=' + jQuery.PRIMO.session.view.code + '&showPnx=true&pds_handle=GUEST&doc=' + recordID,
+                    url: pnx_url,
                     success: function (data, event, xhr) {
 
                         if (xhr.getResponseHeader('Content-Type').search(/xml/) >= 0) {
@@ -181,9 +188,13 @@ function _materialType(record) {
 function _getGetIt(record){
     var view_online = record.tabs.getByName('ViewOnline');
     var url = '';
+    var urls = [];
+    var raw_list = [];
 
     if (view_online && view_online.length > 0){
-     url = $(view_online.find('input[id*="getitonline1"]')).val().split('O4=')[1].split('O5=')[0].replace(/delivery,.*?,/,'');
+     raw_list = $(view_online.find('input[id*="getitonline1"]')).val().split(/&O\d=/);
+     urls = $.map(raw_list, function(d){if (d.match(/^delivery/)){return d.replace(/delivery,.*?,/,'')}});
+     url = urls.length > 0 ? urls[0] : '';
     }
 
     return url;

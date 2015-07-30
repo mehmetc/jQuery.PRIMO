@@ -1,10 +1,10 @@
-<%@page contentType="application/json; charset=UTF-8"%>
-<%@page import="org.json.simple.JSONObject"%>
-<%@page import="org.json.simple.JSONArray"%>
-<%@page import="com.exlibris.primo.context.ContextAccess"%>
-<%@page import="com.exlibris.primo.domain.entities.HSourceRecord"%>
-<%@page import="java.util.ArrayList"%>
-<%@page import="java.util.List"%>
+<%@ page language="java" contentType="application/json; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="org.json.simple.JSONObject"%>
+<%@ page import="org.json.simple.JSONArray"%>
+<%@ page import="com.exlibris.primo.context.ContextAccess"%>
+<%@ page import="com.exlibris.primo.domain.entities.HSourceRecord"%>
+<%@ page import="java.util.ArrayList"%>
+<%@ page import="java.util.List"%>
 <%
 /*
 
@@ -35,13 +35,10 @@ try {
 
         obj.addAll(dedupList);
     }
-
-    out.print(obj);
-    out.flush();
  } catch (Exception e) {
-  out.println("{\"error\":\"");
-  e.printStackTrace(new java.io.PrintWriter(out));
-  out.println("\"}");
+  e.printStackTrace();
+  obj.put("error", e.getMessage());
  }
-
 %>
+
+<%= obj %>

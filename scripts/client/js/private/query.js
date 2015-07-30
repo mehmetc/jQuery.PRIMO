@@ -83,7 +83,7 @@ function _query(){
 
     var searchStep = parseInt($('#resultsNumbersTile span:first').text().replace(/[^\d|-]*/g,'').split('-')[1]);
     var searchPage = 1;
-    if (Number.isNaN(searchStep)){
+    if (isNaN(searchStep)){
         searchStep = 10;
         searchPage = 1;
     } else {

@@ -104,6 +104,17 @@ If you would want to compile jquery.PRIMO.js then follow these steps
 ```js
     jQuery.PRIMO.session.user.isOnCampus();    
 ```
+
+#### Get the Personalized Ranking Categories
+```js
+    jQuery.PRIMO.session.user.ranking.categories;
+```
+
+#### Get the Personalized Ranking 'Prefer newer material' value
+```js
+    jQuery.PRIMO.session.user.ranking.prefer_new;
+```
+
 ###**VIEW**<a name="view"></a>
 #### Get the current view code
 ```js
@@ -163,6 +174,10 @@ Then you can get the frontend id this can be handy when you are debugging
 ```    
 
 ##**PDS**<a name="pds"></a>
+
+If you want this to work you need to add the borrower info url to the helper file. 
+Please look at _jqprimo/helpers/remote_session_date_helper.jsp_ for the instructions.
+
 #### Get the url for PDS
 ```js
     jQuery.PRIMO.session.pds.url;

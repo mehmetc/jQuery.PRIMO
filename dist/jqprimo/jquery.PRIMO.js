@@ -949,7 +949,7 @@ function _xml2text(xmlDoc){
         }()),
         search: _search(),
         session: _getSessionData(),
-        version: "0.0.10",
+        version: "0.0.11",
         reload: function () {
             jQuery.PRIMO.session.reload();
         }

@@ -1,8 +1,9 @@
 function _query(){
     // parse the URL
     function parseURL(){
-        var result = window.location.search.replace(/^\?/, '').split('&').map(
-            function(el){
+        var result = jQuery(window.location.search.replace(/^\?/, '').split('&')).map(
+            function(){
+                var el = this;
                 var data = el.split('=');
                 var result = {};
                 result[decodeURIComponent(data[0])] = decodeURIComponent(data[1]);
@@ -12,9 +13,9 @@ function _query(){
         result.lookup = function(value){
             var lookupResult = [];
 
-            result.forEach(function(element, index, array){
-               // var searchValue = Object.keys(element).find(function(e){ return e.contains(value)});
-                var searchValue = Object.keys(element).map(function(e){
+            jQuery.each(result, function(index, element){
+                var searchValue = jQuery(Object.keys(element)).map(function(){
+                    var e = this;
                     //replace with contains when available
                     var matchesFound = e.match(value.replace(/\(/g, '\\(').replace(/\)/g, '\\)'));
 
@@ -22,7 +23,7 @@ function _query(){
                 }).filter(function(e){return e != null})[0];
 
                 if (searchValue && searchValue != '') {
-                    lookupResult.push(array[index][searchValue]);
+                    lookupResult.push(result[index][searchValue]);
                 }
             });
 
@@ -79,7 +80,7 @@ function _query(){
     }
 
 
-    var searchRecordCount = parseInt(jQuery('#resultsNumbersTile em:first').text().replace(/[\s,]+/g,''));
+    var searchRecordCount = parseInt(jQuery('#resultsNumbersTile em:first').text().replace(/[\s,]+/g,'').replace(/\.|\,/g,''));
 
     var searchStep = parseInt($('#resultsNumbersTile span:first').text().replace(/[^\d|-]*/g,'').split('-')[1]);
     var searchPage = 1;

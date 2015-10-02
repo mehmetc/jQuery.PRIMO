@@ -27,6 +27,8 @@ function _record(i) {
     record.isOnEShelf = function(){ return record.find('.EXLMyShelfStar a').attr('href').search('fn=remove') != -1};
     record.isDedupedRecord = function(){return _getIsDedupRecord(record.id)};
 
+    record.isFrbrRecord = function(){return _getIsFrbrRecord(record)};
+
     record.getData = function(){
         if(!recordData){
             var data = _getPNXData(record.id, 'json');
@@ -62,6 +64,7 @@ var _getPNXData = function (recordID, type) {
         async: false,
         type: 'get',
         dataType: 'xml',
+        cache: false,
         url: jQuery.PRIMO.parameters.base_path + '/helpers/record_helper.jsp?id=' + recordID + '.pnx',
         success: function(data, event, xhr){
             if (xhr.getResponseHeader('Content-Type').search(/xml/) >= 0) {
@@ -91,6 +94,7 @@ var _getPNXData = function (recordID, type) {
                 {
                     async: false,
                     type: 'get',
+                    cache: false,
                     dataType: 'xml',
                     url: pnx_url,
                     success: function (data, event, xhr) {
@@ -131,6 +135,17 @@ var _getPNXData = function (recordID, type) {
  */
 function _getIsDedupRecord(id) {
     return id.search(/^dedupmrg/) != -1;
+}
+
+/**
+ * Private method check if record is a frbr record
+ * @private
+ * @method _getIsFrbrRecord
+ * @param {String} record
+ * @returns {Boolean} true/false
+ */
+function _getIsFrbrRecord(record) {
+    return record.find('.EXLResultFRBR').length > 0;
 }
 
 /**

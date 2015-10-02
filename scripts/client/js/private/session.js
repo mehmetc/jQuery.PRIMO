@@ -25,6 +25,7 @@ var _getFrontEndID = (function () {
                     {
                         async: false,
                         type: 'get',
+                        cache: false,
                         dataType: 'text',
                         url: jQuery.PRIMO.parameters.base_path + '/helpers/frontend_id',
                         success: function (data, event, xhr) {
@@ -57,6 +58,7 @@ var _getUserInfo = (function () {
                     {
                         async: false,
                         type: 'get',
+                        cache: false,
                         dataType: 'xml',
                         url: '/primo_library/libweb/getUserInfoServlet',
                         success: function (data, event, xhr) {
@@ -87,6 +89,7 @@ var _getSessionData = function () {
             jQuery.ajax({
                 async: false,
                 type: 'get',
+                cache: false,
                 dataType: 'json',
                 url: jQuery.PRIMO.parameters.base_path + '/helpers/remote_session_data_helper.jsp',
                 success: function (data, textStatus, jqXHR) {

@@ -15,6 +15,14 @@ function _tab(record, i) {
     else if (typeof(i) == 'string') {
         tab = record.find('.EXLResultTab:contains("' + i + '")');
 
+        if (tab.length == 0) {
+            tab = record.find(".EXLResultTab[id*='" + i + "']");
+        }
+
+        if (tab.length == 0) {
+            tab = record.find(".EXLResultTab[id*='" + i.toLowerCase() + "']");
+        }
+
         if (tab == null || tab.length == 0) {
             tab = $(record.tabs).find('a[title*="' + i + '"]').parent();
         }
@@ -25,24 +33,31 @@ function _tab(record, i) {
     }
 
     if (tab !== null) {
-        var tabName = jQuery(tab).find('a').text().trim();
-        var container = null;
-        jQuery.each(tabName.toLowerCase().replace(/\s/g, '').split('&'), function () {
-            c = record.find('*[class*="Container-' + this + '"]');
+        var tabName;
+        if (jQuery(tab).attr('name') === undefined) {
+            //tabName = jQuery(tab).attr('id').split('-')[1].toLowerCase().replace('tab','');
+            tabName = jQuery(tab).attr('id').split('-')[1].replace('tab','');
+        } else {
+            tabName = jQuery(tab).attr('name').trim();
+        }
 
-            if (c.length > 0) {
-                container = c;
-            }
-        });
+        var container = null;
+        var containerName = 'Container-' + tabName.trim().toLowerCase().replace(/tab$/g, '') + 'Tab';
+        c = record.find('*[class*="' + containerName + '"]');
+
+        if (c.length > 0) {
+            container = c;
+        }
 
         tab.index = i;
+        tab.label = jQuery(tab).find('a').text().trim();
         tab.name = tabName;
         tab.container = container;
         tab.isOpen = function () {
             return jQuery(tab).hasClass('EXLResultSelectedTab');
         };
         tab.close = function () {
-            if (!jQuery.PRIMO.session.view.isFullDisplay) {
+            if (!jQuery.PRIMO.session.view.isFullDisplay()) {
                 record.find('.EXLResultSelectedTab').removeClass('EXLResultSelectedTab');
                 record.find('.EXLTabsRibbon').addClass('EXLTabsRibbonClosed');
                 tab.container.hide();
@@ -107,11 +122,11 @@ function _tabs(record) {
     };
 
     tabData.getEnabled = function () {
-        return jQuery.map(record.find('.EXLResultTab'),
-            function (tab) {
+        return jQuery.map(record.tabs,
+            function (tab, i) {
                 tab = jQuery(tab);
                 if (tab.css('display') != 'none') {
-                    return jQuery(tab).text().trim();
+                    return record.tabs[i].name; //jQuery(tab).text().trim();
                 }
                 return null;
             });
@@ -119,7 +134,7 @@ function _tabs(record) {
 
     tabData.getByName = function(name){
         return _tab(record, name);
-    }
+    };
 
 
     return tabData;
@@ -146,25 +161,29 @@ function _addTab(tabName, options) {
     defaults = {
         record: null,
         state: 'disabled',
-        css: tabName.replace(' ', '').toLowerCase() + 'Tab',
+        css: tabName.trim().toLowerCase().replace(/tab$/,'') + 'Tab',
         url: '#',
         url_target: '',
         tooltip: '',
+        label: tabName,
         headerContent: '',
         click: function (e) {
             alert('To be implemented...');
         }
-    }
+    };
 
     var o = jQuery.extend(defaults, options);
 
+
     if (jQuery.inArray(tabName, o.record.tabs.getNames()) < 0) { // not in tablist -> new tab
-        var customTab = '<li class="EXLResultTab ' + o.css + '">';
-        customTab += '  <span style="display:' + (o.state == 'disabled' ? 'block' : 'none') + '">' + tabName + '</span>';
-        customTab += '  <a style="display:' + (o.state == 'disabled' ? 'none' : 'block') + '"';
-        customTab += '     title="' + o.tooltip + '"';
+        //var customTabId = 'exlidResult'+ o.record.index + '-' + tabName.toLowerCase() + 'Tab';
+        var customTabId = 'exlidResult'+ o.record.index + '-' + tabName;
+        var customTab = '<li id="' + customTabId +'" class="EXLResultTab ' + o.css + '" name="' + tabName + '">';
+        customTab += '  <span style="display:' + (o.state == 'disabled' ? 'block' : 'none') + '">' + o.label + '</span>';
+        customTab += '  <a id="' + customTabId + 'Link" style="display:' + (o.state == 'disabled' ? 'none' : 'block') + '"';
+        customTab += '     title="' + (o.tooltip || o.label) + '"';
         customTab += '     target="' + o.url_target + '"';
-        customTab += '      href="' + o.url + '">' + tabName + '</a>';
+        customTab += '      href="' + o.url + '">' + o.label + '</a>';
         customTab += '</li>';
         var customTabContainer = '<div class="EXLResultTabContainer EXLContainer-' + o.css + '"></div>';
 

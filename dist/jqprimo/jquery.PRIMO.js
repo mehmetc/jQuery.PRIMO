@@ -16,11 +16,43 @@
     };
 
 
+function _facet() {
+    var facets = [];
+    jQuery.each(jQuery('#facetList .EXLFacetContainer'), function (i, container) {
+        container = $(container);
+        container.name = $(container).find('*[class*="EXLFacetTitleLabelPHolder"]').attr('class').replace('EXLFacetTitleLabelPHolder', '');
+        container.values = [];
+        $.each(container.find('.EXLFacet'), function (i, facet) {
+            facet = $(facet);
+            facet.value = $(facet).find('a').text().trim();
+            facet.count = $(facet).find('span').text().trim().replace(/\.|\,/g, '').replace(/\(/g, '').replace(/\)/g, '');
+
+            container.values.push(facet);
+        });
+
+        facets.push(container);
+    });
+
+    facets.getNames = function () {
+        return $.map(facets, function (facet,i) {
+            return facet.name;
+        })
+    };
+
+    facets.getByName = function(name){
+      return facets.filter(function(facet, i){
+          return facet.name === name;
+      })[0];
+    };
+
+    return facets;
+}
 function _query(){
     // parse the URL
     function parseURL(){
-        var result = window.location.search.replace(/^\?/, '').split('&').map(
-            function(el){
+        var result = jQuery(window.location.search.replace(/^\?/, '').split('&')).map(
+            function(){
+                var el = this;
                 var data = el.split('=');
                 var result = {};
                 result[decodeURIComponent(data[0])] = decodeURIComponent(data[1]);
@@ -30,9 +62,9 @@ function _query(){
         result.lookup = function(value){
             var lookupResult = [];
 
-            result.forEach(function(element, index, array){
-               // var searchValue = Object.keys(element).find(function(e){ return e.contains(value)});
-                var searchValue = Object.keys(element).map(function(e){
+            jQuery.each(result, function(index, element){
+                var searchValue = jQuery(Object.keys(element)).map(function(){
+                    var e = this;
                     //replace with contains when available
                     var matchesFound = e.match(value.replace(/\(/g, '\\(').replace(/\)/g, '\\)'));
 
@@ -40,7 +72,7 @@ function _query(){
                 }).filter(function(e){return e != null})[0];
 
                 if (searchValue && searchValue != '') {
-                    lookupResult.push(array[index][searchValue]);
+                    lookupResult.push(result[index][searchValue]);
                 }
             });
 
@@ -97,7 +129,7 @@ function _query(){
     }
 
 
-    var searchRecordCount = parseInt(jQuery('#resultsNumbersTile em:first').text().replace(/[\s,]+/g,''));
+    var searchRecordCount = parseInt(jQuery('#resultsNumbersTile em:first').text().replace(/[\s,]+/g,'').replace(/\.|\,/g,''));
 
     var searchStep = parseInt($('#resultsNumbersTile span:first').text().replace(/[^\d|-]*/g,'').split('-')[1]);
     var searchPage = 1;
@@ -154,6 +186,8 @@ function _record(i) {
     record.isOnEShelf = function(){ return record.find('.EXLMyShelfStar a').attr('href').search('fn=remove') != -1};
     record.isDedupedRecord = function(){return _getIsDedupRecord(record.id)};
 
+    record.isFrbrRecord = function(){return _getIsFrbrRecord(record)};
+
     record.getData = function(){
         if(!recordData){
             var data = _getPNXData(record.id, 'json');
@@ -189,6 +223,7 @@ var _getPNXData = function (recordID, type) {
         async: false,
         type: 'get',
         dataType: 'xml',
+        cache: false,
         url: jQuery.PRIMO.parameters.base_path + '/helpers/record_helper.jsp?id=' + recordID + '.pnx',
         success: function(data, event, xhr){
             if (xhr.getResponseHeader('Content-Type').search(/xml/) >= 0) {
@@ -218,6 +253,7 @@ var _getPNXData = function (recordID, type) {
                 {
                     async: false,
                     type: 'get',
+                    cache: false,
                     dataType: 'xml',
                     url: pnx_url,
                     success: function (data, event, xhr) {
@@ -258,6 +294,17 @@ var _getPNXData = function (recordID, type) {
  */
 function _getIsDedupRecord(id) {
     return id.search(/^dedupmrg/) != -1;
+}
+
+/**
+ * Private method check if record is a frbr record
+ * @private
+ * @method _getIsFrbrRecord
+ * @param {String} record
+ * @returns {Boolean} true/false
+ */
+function _getIsFrbrRecord(record) {
+    return record.find('.EXLResultFRBR').length > 0;
 }
 
 /**
@@ -389,6 +436,7 @@ function _search() {
             jQuery.ajax(
                 {
                     async: false,
+                    cache: false,
                     type: 'get',
                     dataType: 'xml',
                     url: '/PrimoWebServices/xservice/search/brief?institution=' + institution + '&indx=' + index + '&bulkSize=' + bulkSize + query
@@ -438,6 +486,7 @@ var _getFrontEndID = (function () {
                     {
                         async: false,
                         type: 'get',
+                        cache: false,
                         dataType: 'text',
                         url: jQuery.PRIMO.parameters.base_path + '/helpers/frontend_id',
                         success: function (data, event, xhr) {
@@ -470,6 +519,7 @@ var _getUserInfo = (function () {
                     {
                         async: false,
                         type: 'get',
+                        cache: false,
                         dataType: 'xml',
                         url: '/primo_library/libweb/getUserInfoServlet',
                         success: function (data, event, xhr) {
@@ -500,6 +550,7 @@ var _getSessionData = function () {
             jQuery.ajax({
                 async: false,
                 type: 'get',
+                cache: false,
                 dataType: 'json',
                 url: jQuery.PRIMO.parameters.base_path + '/helpers/remote_session_data_helper.jsp',
                 success: function (data, textStatus, jqXHR) {
@@ -569,6 +620,14 @@ function _tab(record, i) {
     else if (typeof(i) == 'string') {
         tab = record.find('.EXLResultTab:contains("' + i + '")');
 
+        if (tab.length == 0) {
+            tab = record.find(".EXLResultTab[id*='" + i + "']");
+        }
+
+        if (tab.length == 0) {
+            tab = record.find(".EXLResultTab[id*='" + i.toLowerCase() + "']");
+        }
+
         if (tab == null || tab.length == 0) {
             tab = $(record.tabs).find('a[title*="' + i + '"]').parent();
         }
@@ -579,24 +638,31 @@ function _tab(record, i) {
     }
 
     if (tab !== null) {
-        var tabName = jQuery(tab).find('a').text().trim();
-        var container = null;
-        jQuery.each(tabName.toLowerCase().replace(/\s/g, '').split('&'), function () {
-            c = record.find('*[class*="Container-' + this + '"]');
+        var tabName;
+        if (jQuery(tab).attr('name') === undefined) {
+            //tabName = jQuery(tab).attr('id').split('-')[1].toLowerCase().replace('tab','');
+            tabName = jQuery(tab).attr('id').split('-')[1].replace('tab','');
+        } else {
+            tabName = jQuery(tab).attr('name').trim();
+        }
 
-            if (c.length > 0) {
-                container = c;
-            }
-        });
+        var container = null;
+        var containerName = 'Container-' + tabName.trim().toLowerCase().replace(/tab$/g, '') + 'Tab';
+        c = record.find('*[class*="' + containerName + '"]');
+
+        if (c.length > 0) {
+            container = c;
+        }
 
         tab.index = i;
+        tab.label = jQuery(tab).find('a').text().trim();
         tab.name = tabName;
         tab.container = container;
         tab.isOpen = function () {
             return jQuery(tab).hasClass('EXLResultSelectedTab');
         };
         tab.close = function () {
-            if (!jQuery.PRIMO.session.view.isFullDisplay) {
+            if (!jQuery.PRIMO.session.view.isFullDisplay()) {
                 record.find('.EXLResultSelectedTab').removeClass('EXLResultSelectedTab');
                 record.find('.EXLTabsRibbon').addClass('EXLTabsRibbonClosed');
                 tab.container.hide();
@@ -661,11 +727,11 @@ function _tabs(record) {
     };
 
     tabData.getEnabled = function () {
-        return jQuery.map(record.find('.EXLResultTab'),
-            function (tab) {
+        return jQuery.map(record.tabs,
+            function (tab, i) {
                 tab = jQuery(tab);
                 if (tab.css('display') != 'none') {
-                    return jQuery(tab).text().trim();
+                    return record.tabs[i].name; //jQuery(tab).text().trim();
                 }
                 return null;
             });
@@ -673,7 +739,7 @@ function _tabs(record) {
 
     tabData.getByName = function(name){
         return _tab(record, name);
-    }
+    };
 
 
     return tabData;
@@ -700,25 +766,29 @@ function _addTab(tabName, options) {
     defaults = {
         record: null,
         state: 'disabled',
-        css: tabName.replace(' ', '').toLowerCase() + 'Tab',
+        css: tabName.trim().toLowerCase().replace(/tab$/,'') + 'Tab',
         url: '#',
         url_target: '',
         tooltip: '',
+        label: tabName,
         headerContent: '',
         click: function (e) {
             alert('To be implemented...');
         }
-    }
+    };
 
     var o = jQuery.extend(defaults, options);
 
+
     if (jQuery.inArray(tabName, o.record.tabs.getNames()) < 0) { // not in tablist -> new tab
-        var customTab = '<li class="EXLResultTab ' + o.css + '">';
-        customTab += '  <span style="display:' + (o.state == 'disabled' ? 'block' : 'none') + '">' + tabName + '</span>';
-        customTab += '  <a style="display:' + (o.state == 'disabled' ? 'none' : 'block') + '"';
-        customTab += '     title="' + o.tooltip + '"';
+        //var customTabId = 'exlidResult'+ o.record.index + '-' + tabName.toLowerCase() + 'Tab';
+        var customTabId = 'exlidResult'+ o.record.index + '-' + tabName;
+        var customTab = '<li id="' + customTabId +'" class="EXLResultTab ' + o.css + '" name="' + tabName + '">';
+        customTab += '  <span style="display:' + (o.state == 'disabled' ? 'block' : 'none') + '">' + o.label + '</span>';
+        customTab += '  <a id="' + customTabId + 'Link" style="display:' + (o.state == 'disabled' ? 'none' : 'block') + '"';
+        customTab += '     title="' + (o.tooltip || o.label) + '"';
         customTab += '     target="' + o.url_target + '"';
-        customTab += '      href="' + o.url + '">' + tabName + '</a>';
+        customTab += '      href="' + o.url + '">' + o.label + '</a>';
         customTab += '</li>';
         var customTabContainer = '<div class="EXLResultTabContainer EXLContainer-' + o.css + '"></div>';
 
@@ -745,6 +815,46 @@ function _addTab(tabName, options) {
     }
 
     o.record.tabs = _tabs(o.record);
+}
+//Borrowed from http://absurdjs.com/ thanks Kasimir.
+function _template(){
+    function _render(html, options) {
+        var re = /{{(.+?)}}/g,
+            reExp = /(^( )?(var|if|for|else|switch|case|break|{|}|;))(.*)?/g,
+            code = 'with(obj) { var r=[];\n',
+            cursor = 0,
+            result;
+        var add = function (line, js) {
+            js ? (code += line.match(reExp) ? line + '\n' : 'r.push(' + line + ');\n') :
+                (code += line != '' ? 'r.push("' + line.replace(/"/g, '\\"') + '");\n' : '');
+            return add;
+        };
+        var match;
+        while (match = re.exec(html)) {
+            add(html.slice(cursor, match.index))(match[1], true);
+            cursor = match.index + match[0].length;
+        }
+        add(html.substr(cursor, html.length - cursor));
+        code = (code + 'return r.join(""); }').replace(/[\r\t\n]/g, '');
+        try {
+            result = new Function('obj', code).apply(options, [options]);
+        }
+        catch (err) {
+            console.error("'" + err.message + "'", " in \n\nCode:\n", code, "\n");
+        }
+        return result;
+    };
+
+
+    return {
+        render: function(html, options){
+            return _render(html, options);
+        },
+        renderById: function(id, options){
+            var html = $('#'+id).html();
+            return _render(html, options);
+        }
+    }
 }
 /**
  * Transform an XML document into JSON
@@ -937,8 +1047,8 @@ function _xml2text(xmlDoc){
  *
  * An ExLibris PRIMO convinience Library
  */
-
     jQuery.extend(jQuery.PRIMO, {
+        facets: _facet(),
         query: _query(),
         records: (function () {
             var data = [];
@@ -949,10 +1059,11 @@ function _xml2text(xmlDoc){
         }()),
         search: _search(),
         session: _getSessionData(),
-        version: "0.0.11",
+        version: "0.0.12",
         reload: function () {
             jQuery.PRIMO.session.reload();
-        }
+        },
+        template: _template()
     });
 
 

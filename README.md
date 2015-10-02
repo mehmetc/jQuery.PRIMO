@@ -46,11 +46,12 @@ If you would want to compile jquery.PRIMO.js then follow these steps
 
 #Examples  
   
+- [facets](#facets)
 - [misc](#misc)  
-- [session](#session)
+- [query](#query)
 - [records](#records)
 - [search](#search)  
-- [query](#query)
+- [session](#session)
   
 ##**MISC**<a name="misc"></a>  
 #### Version of jQuery.PRIMO library
@@ -290,13 +291,46 @@ and it returns /bor/bor-info.
     );    
 ```
 
+##**FACETS**<a name="facets"></a>
+
+#### Get all facet names
+```js
+    jQuery.PRIMO.facets.getNames();
+```
+
+#### Get facet by name
+```js
+    jQuery.PRIMO.facets.getByName('facet_lang')
+```
+
+#### Get ALL value objects for facet_lang
+```js
+    jQuery.PRIMO.facets.getByName('facet_lang').values
+```
+
+#### Get ALL values for first facet
+```js
+    jQuery.map(jQuery.PRIMO.facets[0].values, function(f,i){return f.value})
+```
+
+#### Get FIRST value for facet_lang
+```js
+    jQuery.PRIMO.facets.getByName('facet_lang').values[0].value
+```
+
+#### Get number of hits for FIRST facet of facet_lang
+```js
+    jQuery.PRIMO.facets.getByName('facet_lang').values[0].count
+```
+
 ##**TABS**<a name="tabs"></a>
 
 #### Add a new tab to all records
 ```js
       jQuery.PRIMO.records.each(
         function(index, record){
-          record.tabs.addTab('Hello World',{
+          record.tabs.addTab('HelloTab',{
+            label: 'Hello World',
             state:'enabled', 
             click:function(event, tab, record, options){
                     if (tab.isOpen()){
@@ -314,7 +348,7 @@ and it returns /bor/bor-info.
 ```js
     jQuery.PRIMO.records.each(
         function(index, record){
-            record.tabs.addTab('Share', {tooltip:'Share', state:'enabled', click:function (event, tab, record, options) {
+            record.tabs.addTab('ShareTab', {label: 'Share',tooltip:'Share', state:'enabled', click:function (event, tab, record, options) {
                 if (tab.isOpen()) {
                     tab.close();
                 } else {
@@ -357,23 +391,25 @@ and it returns /bor/bor-info.
       
 #### Open an URL in the tab of the first record
 ```js
-    jQuery.PRIMO.records[0].tabs.addTab('KULeuven', {state:'enabled',
-                                                url:'http://www.kuleuven.be',
-                                                click:function(event, tab, record, options) {
-                                                    if (tab.isOpen()) {
-                                                        tab.close();
-                                                    } else {
-                                                        tab.open('<iframe src="'+options.url+'"/>', {reload: true});
-                                                    }
-                                                }
-                                               });      
+    jQuery.PRIMO.records[0].tabs.addTab('KULeuvenTab', {label: 'KULeuven', 
+                                                        state:'enabled',
+                                                        url:'http://www.kuleuven.be',
+                                                        click:function(event, tab, record, options) {
+                                                            if (tab.isOpen()) {
+                                                                tab.close();
+                                                            } else {
+                                                                tab.open('<iframe src="'+options.url+'"/>', {reload: true});
+                                                            }
+                                                        }
+                                                       });      
 ```
 #### Open the URL in a new window. Works as a normal link.
 ```js
-       jQuery.PRIMO.records[1].tabs.addTab('url', {state:'enabled',
-                                                   url:'http://www.kuleuven.be', url_target: '_blank',
-                                                   click: null
-                                                  }); 
+       jQuery.PRIMO.records[1].tabs.addTab('UrlTab', {label: 'Url', 
+                                                      state:'enabled',
+                                                      url:'http://www.kuleuven.be', url_target: '_blank',
+                                                      click: null
+                                                     }); 
 ```                                                  
   
 #### Get all tab names for the 6th record
@@ -388,17 +424,17 @@ and it returns /bor/bor-info.
 
 #### Get the details tab by name
 ```js
-    jQuery.PRIMO.records[5].tabs.getByName('Details');
+    jQuery.PRIMO.records[5].tabs.getByName('DetailsTab');
 ```   
   
 #### Programmatically click on a tab
 ```js
-    jQuery.PRIMO.records[0].tabs.getByName('Details').find('a').click();
+    jQuery.PRIMO.records[0].tabs.getByName('DetailsTab').find('a').click();
 ```  
   
 #### Get the link behind the details tab
 ```js
-    jQuery.PRIMO.records[5].tabs.getByName('Details').find('a').attr('href');
+    jQuery.PRIMO.records[5].tabs.getByName('DetailsTab').find('a').attr('href');
 ```  
     
 #### Get the name of the first tab
@@ -485,6 +521,48 @@ This will return an _Object_ or an _Array_ depending on the query.type
 ```js
     jQuery.PRIMO.query.isDeeplinkSearch();
 ```    
+
+# Rendering HTML using templates
+
+```js
+    jQuery('body').append(jQuery.PRIMO.template.render('<div> Hello, {{who}}</div>', {who: 'world'}));
+```
+You can create templates using the script tag
+
+```js
+    <script type='text/template' id='helloWorld-tpl'>
+        <div>Hello {{who}}</div>
+    </script>
+```
+and use them in your javascript
+
+```js    
+    <script type='text/javascript'>
+        jQuery('body').append(jQuery.PRIMO.template.renderById('helloWorld-tpl', {who: 'world'}));
+    </script>    
+```
+
+### Print all titles using a template
+
+Loop over all records and print title
+```js
+   <script type='text/template' id='allTitles-tpl'>
+       <div id="allTitles">
+            <ol>
+                {{ for(var i=0;i<records.length;i++){ }}
+                    <li>{{ records[i].title }}</li>
+                {{ } }}
+            </ol>       
+       </div>
+   </script> 
+```
+
+Render the allTitles template and append it to the body
+```js
+    <script type='text/javascript'>
+        jQuery('body').append(jQuery.PRIMO.template.renderById('allTitles-tpl', {records: $.PRIMO.records}));
+    </script>    
+```
       
 # Contributing to jQuery.PRIMO
 - Fork the project.

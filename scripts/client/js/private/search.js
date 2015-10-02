@@ -60,6 +60,7 @@ function _search() {
             jQuery.ajax(
                 {
                     async: false,
+                    cache: false,
                     type: 'get',
                     dataType: 'xml',
                     url: '/PrimoWebServices/xservice/search/brief?institution=' + institution + '&indx=' + index + '&bulkSize=' + bulkSize + query

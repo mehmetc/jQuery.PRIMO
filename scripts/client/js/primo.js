@@ -2,8 +2,8 @@
  *
  * An ExLibris PRIMO convinience Library
  */
-
     jQuery.extend(jQuery.PRIMO, {
+        facets: _facet(),
         query: _query(),
         records: (function () {
             var data = [];
@@ -17,5 +17,6 @@
         version: "<%= version %>",
         reload: function () {
             jQuery.PRIMO.session.reload();
-        }
+        },
+        template: _template()
     });

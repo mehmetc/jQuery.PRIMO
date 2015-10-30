@@ -30,8 +30,8 @@ Browsers are getting stricter with every release. If you get strange errors just
     <script type='text/javascript' src='/primo_library/libweb/jqprimo/jquery.PRIMO.min.js'></script>
 ```    
 
-If you do not have shell access to your server you can use "File Uploader"(Primo Home > Primo Utilities > File Uploader)
-on the backend but you will not be able to upload the helper files. I have no solution for this besides asking ExLibris to upload these.
+If you do not have shell access to your server you can ask ExLibris to upload these. 
+We are working closely with ExLibris to make this a part of Primo. 
 
 The helper files will add extra functionality to the library like looking up records id in a deduped record, get the original record, ...
 
@@ -42,16 +42,19 @@ If you would want to compile jquery.PRIMO.js then follow these steps
 - `npm install`
 - `gulp`
 
-
+#Object model
+![jQuery.PRIMO Object Model](./docs/jquery.PRIMO.png "jQuery.PRIMO Object Model")
 
 #Examples  
-  
-- [facets](#facets)
+- [Use templates and keep your sanity](#templates)     
+     
+###### Objects             
 - [misc](#misc)  
+- [session](#session)
 - [query](#query)
+- [facets](#facets)
 - [records](#records)
 - [search](#search)  
-- [session](#session)
   
 ##**MISC**<a name="misc"></a>  
 #### Version of jQuery.PRIMO library
@@ -64,11 +67,19 @@ If you would want to compile jquery.PRIMO.js then follow these steps
     jQuery.PRIMO.reload();
 ```
 
+
 ##**SESSION**<a name="session"></a>
+Some functions and attributes will only be available when the _remote_session_data_helper.jsp_ file is installed on the server.
+Otherwise it will load a minimal of session data from the default _getUserInfoServlet_ service.
+    
+_**In other words if you can not find the attribute or function you are looking for see if the helper methods are getting loaded.**_
+    
+
 - [user](#user)
 - [view](#view)
 - [ip](#ip)
 - [pds](#pds)
+- [performance](#performance)
 
 #### Get the session id
 ```js
@@ -196,7 +207,32 @@ and it returns /bor/bor-info.
     jQuery.PRIMO.session.pds.borInfo;
 ```
 
+##**PERFORMANCE**<a name="performance"></a>
+**Only available if the browser supports it.**
+Be careful the getPageLoad and getPageRender methods are non blocking. 
+This means they will _only_ return sain values after the page is completely loaded and rendered.
+
+### Timing
+
+#### Get timing for Network latency
+```js
+    jQuery.session.performance.timing.getNetworkLatency();
+```
+
+#### Get timing for Page Load
+```js
+    jQuery.PRIMO.session.performance.timing.getPageLoad();
+```
+    
+#### Get timing for Page Render    
+```js
+    jQuery.PRIMO.session.performance.timing.getPageRender();
+```
+   
+
 ##**RECORDS**<a name="records"></a>
+Extends the **DOM**.  
+
 - [tabs](#tabs)
 
 #### Get number of records on screen (this is an Array)
@@ -292,6 +328,7 @@ and it returns /bor/bor-info.
 ```
 
 ##**FACETS**<a name="facets"></a>
+Extends the **DOM**. 
 
 #### Get all facet names
 ```js
@@ -324,6 +361,7 @@ and it returns /bor/bor-info.
 ```
 
 ##**TABS**<a name="tabs"></a>
+Extends the **DOM**. 
 
 #### Add a new tab to all records
 ```js
@@ -467,6 +505,8 @@ and it returns /bor/bor-info.
 ```    
 
 ##**QUERY**<a name="query"></a>
+Parses the URL and scrapes the **DOM** for data.
+
 ### Get result set count
 ```js
    jQuery.PRIMO.query.count;
@@ -491,7 +531,7 @@ should be equal to
     jQuery.PRIMO.query.type;
 ```
 
-### Get search tab
+### Get search tab  (search scope)
 ```js
     jQuery.PRIMO.query.tab;
 ```    
@@ -502,10 +542,35 @@ should be equal to
 ```               
       
 ### Get query
-This will return an _Object_ or an _Array_ depending on the query.type
+This will return an _Array_ of _Object_ parsed from the URL not the DOM 
+The Object contains the index, precision and term.
 ```js
     jQuery.PRIMO.query.query;
 ```      
+
+contains
+
+```json
+    [
+        {
+         "index":"any",
+         "precision":"contains",
+         "term":"perceval"
+        }
+    ]
+```
+ 
+ 
+### Get query as text (like the xService syntax)
+```js
+    jQuery.PRIMO.query.query.toString();
+```
+
+returns 
+
+```text
+    (any contains perceval)
+```
 
 ### Get search scope
 ```js
@@ -522,7 +587,7 @@ This will return an _Object_ or an _Array_ depending on the query.type
     jQuery.PRIMO.query.isDeeplinkSearch();
 ```    
 
-# Rendering HTML using templates
+# Rendering HTML using templates<a name="templates"></a>
 
 ```js
     jQuery('body').append(jQuery.PRIMO.template.render('<div> Hello, {{who}}</div>', {who: 'world'}));
@@ -563,6 +628,35 @@ Render the allTitles template and append it to the body
         jQuery('body').append(jQuery.PRIMO.template.renderById('allTitles-tpl', {records: $.PRIMO.records}));
     </script>    
 ```
+
+### Add a search tab to Google Scolar (for simple search)
+###### Idea by Lukas Koster
+
+Template to add extra Search Scope Tab
+```js
+<script type='text/template' id='searchTab-tpl'> 
+    <li class="EXLSearchTab" id="{{id}}">
+      <a href="{{href}}" title="{{description}}" target="{{target}}">
+        <span>{{label}}</span>
+      </a>
+    </li>
+</script>
+```
+
+Render the template using some variables 
+```js   
+<script type='text/javascript'>
+    var query = jQuery.PRIMO.query.query.map(function(d){return d.term}).join(" ");
+    var renderedTemplate = jQuery.PRIMO.template.renderById('searchTab-tpl',
+                        {id: 'exlidTabGoogleScolar',
+                        label: 'Google Scholar',
+                        description: 'Perform search on Google Scholar',
+                        href:'http://scholar.google.com/scholar?as_q=' + query,									
+                        target:'_blank'});
+
+    jQuery('#exlidSearchTabs').append(renderedTemplate);
+</script>
+```      
       
 # Contributing to jQuery.PRIMO
 - Fork the project.

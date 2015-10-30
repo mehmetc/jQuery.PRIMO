@@ -133,6 +133,16 @@ var _getSessionData = function () {
                 sessionData = null;
                 jQuery.PRIMO.session = getSessionData();
                 return sessionData;
+            };
+
+            if (((typeof window.performance) !== "undefined") && ((typeof window.performance.timing) !== "undefined")) {
+                sessionData.performance = {
+                    timing: {
+                        getNetworkLatency: function(){return (performance.timing.responseEnd - performance.timing.fetchStart)},
+                        getPageRender: function(){return (performance.timing.loadEventEnd - performance.timing.responseEnd)},
+                        getPageLoad: function(){return (performance.timing.loadEventEnd - performance.timing.navigationStart)}
+                    }
+                };
             }
 
             return sessionData;

@@ -15,25 +15,39 @@ function _record(i) {
     record.title = record.find('.EXLResultTitle').text().trim();
     record.openUrl = record.find('.EXLMoreTab a').attr('href');
     record.tabs = _tabs(record);
-    record.materialType = function(){return _materialType(record)};
+    record.materialType = function () {
+        return _materialType(record)
+    };
 
 // methods
-    record.getIt1 = function(){ return _getGetIt(record);}; // needs tabs
+    record.getIt1 = function () {
+        return _getGetIt(record);
+    }; // needs tabs
 
 
-    record.getDedupedRecordIds =  function(){ return _getRecordIdInDedupRecord(record.id).data() };
+    record.getDedupedRecordIds = function () {
+        return _getRecordIdInDedupRecord(record.id).data()
+    };
 
-    record.isRemoteRecord = function(){ return (record.id.substring(0, 2) === 'TN')};
-    record.isOnEShelf = function(){ return record.find('.EXLMyShelfStar a').attr('href').search('fn=remove') != -1};
-    record.isDedupedRecord = function(){return _getIsDedupRecord(record.id)};
+    record.isRemoteRecord = function () {
+        return (record.id.substring(0, 2) === 'TN')
+    };
+    record.isOnEShelf = function () {
+        return record.find('.EXLMyShelfStar a').attr('href').search('fn=remove') != -1
+    };
+    record.isDedupedRecord = function () {
+        return _getIsDedupRecord(record.id)
+    };
 
-    record.isFrbrRecord = function(){return _getIsFrbrRecord(record)};
+    record.isFrbrRecord = function () {
+        return _getIsFrbrRecord(record)
+    };
 
-    record.getData = function(){
-        if(!recordData){
+    record.getData = function () {
+        if (!recordData) {
             var data = _getPNXData(record.id, 'json');
-            if (data && data.length > 0 ) {
-                recordData =  data[0];
+            if (data && data.length > 0) {
+                recordData = data[0];
             }
         }
 
@@ -64,9 +78,31 @@ var _getPNXData = function (recordID, type) {
         async: false,
         type: 'get',
         dataType: 'xml',
-        cache: false,
         url: jQuery.PRIMO.parameters.base_path + '/helpers/record_helper.jsp?id=' + recordID + '.pnx',
-        success: function(data, event, xhr){
+    }).then(function (data, textStatus, xhr) {
+        if (xhr.getResponseHeader('Content-Type').search(/xml/) >= 0) {
+            switch (type) {
+                case 'text':
+                    pnx = _xml2text(data);
+                    break;
+                case 'json':
+                    pnx = $(_xml2json(data));
+                    break;
+                default:
+                    pnx = $(data);
+            }
+        } else {
+            alert('PDS redirect detected. Do not know how to handle that, yet.');
+        }
+    }, function (xhr, textStatus, errorThrown) {
+        var pnx_url = '/primo_library/libweb/action/display.do?vid=' + jQuery.PRIMO.session.view.code + '&pds_handle=GUEST&doc=' + recordID + '&showPnx=true';
+
+        jQuery.ajax({
+            async: false,
+            type: 'get',
+            dataType: 'xml',
+            url: pnx_url
+        }).then(function (data, event, xhr) {
             if (xhr.getResponseHeader('Content-Type').search(/xml/) >= 0) {
                 switch (type) {
                     case 'text':
@@ -81,43 +117,10 @@ var _getPNXData = function (recordID, type) {
             } else {
                 alert('PDS redirect detected. Do not know how to handle that, yet.');
             }
-        },
-        error:function(jqXHR, textStatus, errorThrown){ //fall back to default
-          //  var recordIdx = jQuery.inArray(recordID ,jQuery.map(jQuery.PRIMO.records, function(n,i){return n.id;}));
-          //  var details_url = jQuery(jQuery.PRIMO.records[recordIdx].tabs).filter('.EXLDetailsTab').find('a').attr('href');
-          //  $.get(details_url, function(data){  var html = $.parseHTML(data);  console.log($(html).find('.EXLTabHeaderButtonPopout').length);},'html')
-          //  var pnx_url = jQuery.PRIMO.records[recordIdx].find('.EXLTabHeaderButtonPopout a').attr('href') + '&showPnx=true';
-
-            var pnx_url = '/primo_library/libweb/action/display.do?vid=' + jQuery.PRIMO.session.view.code + '&pds_handle=GUEST&doc=' + recordID + '&showPnx=true';
-
-            jQuery.ajax(
-                {
-                    async: false,
-                    type: 'get',
-                    cache: false,
-                    dataType: 'xml',
-                    url: pnx_url,
-                    success: function (data, event, xhr) {
-
-                        if (xhr.getResponseHeader('Content-Type').search(/xml/) >= 0) {
-                            switch (type) {
-                                case 'text':
-                                    pnx = _xml2text(data);
-                                    break;
-                                case 'json':
-                                    pnx = $(_xml2json(data));
-                                    break;
-                                default:
-                                    pnx = $(data);
-                            }
-                        } else {
-                            alert('PDS redirect detected. Do not know how to handle that, yet.');
-                        }
-                    }
-                });
-        }
-
-    });
+        }, function (xhr, textStatus, errorThrown) {
+            alert('Unable to load record:' + errorThrown);
+        });
+    }); //then
 
     if ($.isArray(pnx)) {
         return pnx[0];
@@ -159,18 +162,18 @@ function _getRecordIdInDedupRecord(id) {
     var dedupRecordIds = [];
 
     return {
-        data: function(){
-            if (dedupRecordIds.length === 0){
+        data: function () {
+            if (dedupRecordIds.length === 0) {
                 if (_getIsDedupRecord(id)) {
                     jQuery.ajax({
                         async: false,
                         type: 'get',
                         dataType: 'json',
                         data: {"id": id},
-                        url: jQuery.PRIMO.parameters.base_path +'/helpers/dedup_records_helper.jsp'
-                    }).done(function(data, textStatus, jqXHR){
+                        url: jQuery.PRIMO.parameters.base_path + '/helpers/dedup_records_helper.jsp'
+                    }).done(function (data, textStatus, jqXHR) {
                         dedupRecordIds = data;
-                    }).fail(function(data, textStatus, jqXHR){
+                    }).fail(function (data, textStatus, jqXHR) {
                         console.log('You need the dedup_records_helper.jsp file');
                     });
                 }
@@ -200,16 +203,20 @@ function _materialType(record) {
  * @returns {string}
  * @private
  */
-function _getGetIt(record){
+function _getGetIt(record) {
     var view_online = record.tabs.getByName('ViewOnline');
     var url = '';
     var urls = [];
     var raw_list = [];
 
-    if (view_online && view_online.length > 0){
-     raw_list = $(view_online.find('input[id*="getitonline1"]')).val().split(/&O\d=/);
-     urls = $.map(raw_list, function(d){if (d.match(/^delivery/)){return d.replace(/delivery,.*?,/,'')}});
-     url = urls.length > 0 ? urls[0] : '';
+    if (view_online && view_online.length > 0) {
+        raw_list = $(view_online.find('input[id*="getitonline1"]')).val().split(/&O\d=/);
+        urls = $.map(raw_list, function (d) {
+            if (d.match(/^delivery/)) {
+                return d.replace(/delivery,.*?,/, '')
+            }
+        });
+        url = urls.length > 0 ? urls[0] : '';
     }
 
     return url;

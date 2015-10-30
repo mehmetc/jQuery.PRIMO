@@ -56,14 +56,12 @@ function _query(){
     //Get the query. only search.do for now
     //TODO:Handle dlSearch.do
     if (parsedURL.lookup('mode')[0] !== undefined && parsedURL.lookup('mode')[0] === 'Basic'){
-        console.log('Basic');
         $(parsedURL.lookup('freeText')).each(function(i, el){
             query.push({'index':'any', 'precision':'contains', 'term': el});
         });
     } else {
-        console.log('Advanced');
         $(parsedURL.lookup('freeText')).each(function(i, el){
-            query.push({'index': parsedURL.lookup('UI'+i)[0], 'precision': parsedURL.lookup('StartWith'+i)[0], 'term': parsedURL.lookup('freeText'+i)[0]});
+            query.push({'index': (parsedURL.lookup('UI'+i)[0] || 'any'), 'precision': (parsedURL.lookup('StartWith'+i)[0] || 'contains'), 'term': (parsedURL.lookup('freeText'+i)[0] || '')});
         });
 
         var advancedSearchKeys= {};
@@ -74,11 +72,10 @@ function _query(){
 
         $(Object.keys(advancedSearchKeys)).each(function(i,el){
             var key = el;
-            var value = parsedURL.lookup(advancedSearchKeys[key])[0];
+            var value = parsedURL.lookup(advancedSearchKeys[key])[0] || '';
             query.push({'index': key, 'precision':'contains', 'term': decodeURIComponent(value)});
         })
     }
-
 
     var searchRecordCount = parseInt(jQuery('#resultsNumbersTile em:first').text().replace(/[\s,]+/g,'').replace(/\.|\,/g,''));
 
@@ -92,11 +89,52 @@ function _query(){
         searchPage = Math.floor(parseInt($('#resultsNumbersTile span:first').text().replace(/[^\d|-]*/g,'').split('-')[1])/(searchStep));
     }
 
+    function queryToString(){
+        var textQuery = "";
+        if (isDeeplinkSearch()){
+            var url_query = jQuery(window.location.search.replace(/^\?/, '').split('&')).map(
+                function(){
+                    var el = this;
+                    var data = el.split('=');
+                    var result = {};
+                    result[decodeURIComponent(data[0])] = decodeURIComponent(data[1]);
+                    return result;
+                });
+
+            textQuery = url_query.length > 0 ? url_query[0]['query'].replace(/\,/g,' ') : '';
+        }
+        else {
+            jQuery(query).each(function(i, el) {
+                query[i] = el;
+                if (el.term.trim().length > 0){
+                    textQuery += textQuery.length > 0 ? ' AND ' : '';
+                    textQuery += '(' + el.index + ' ' + el.precision + ' ' + el.term + ')';
+                }
+            });
+
+            jQuery(facets).each(function(i, el) {
+                jQuery(Object.keys(el)).each(function(j, key){
+                    facets[i] = {index:key, term: el[key]};
+                    if (el[key].trim().length > 0) {
+                        textQuery += textQuery.length > 0 ? ' AND ' : '';
+                        textQuery += '(' + key + ' exact ' + el[key] + ')';
+                    }
+                });
+            });
+        }
+
+        return textQuery;
+    }
+    function isDeeplinkSearch(){
+        return (window.location.href.match('dlSearch.do') != null);
+    }
+
+    query.toString = function(){
+        return queryToString();
+    };
 
     return {
-        isDeeplinkSearch: function(){
-            return (window.location.href.match('dlSearch.do') != null);
-        },
+        isDeeplinkSearch: isDeeplinkSearch,
         count: searchRecordCount,
         step: searchStep,
         page: searchPage,

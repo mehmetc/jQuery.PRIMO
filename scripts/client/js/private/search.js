@@ -7,12 +7,12 @@ function _search() {
     return {
         /**
          * Get Record by record_id
-         * @method by_record_id
+         * @method byRecordId
          * @private
          * @param {String} record id
          * @returns {Object} record hash
          */
-        by_record_id: function(rid, options){
+        byRecordId: function(rid, options){
             if (rid === undefined) {
                 throw 'You must supply a record id'
             }
@@ -37,12 +37,12 @@ function _search() {
         },
         /**
          * Get Record by a query in the form of index,match type,query
-         * @method by_query
+         * @method byQuery
          * @private
          * @param {String} query
          * @returns {Object} record hash
          */
-        by_query: function(query, options) {
+        byQuery: function(query, options) {
             var institution = (options !== undefined) && (options['institution'] !== undefined) ? options['institution'] : jQuery.PRIMO.session.view.code;
             var index       = (options !== undefined) && (options['index'] !== undefined) ? options['index'] : 1;
             var bulkSize    = (options !== undefined) && (options['bulkSize'] !== undefined) ? options['bulkSize'] : 10;

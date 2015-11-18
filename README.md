@@ -21,6 +21,7 @@ but it should give you an idea of what it can be used for.
 Browsers are getting stricter with every release. If you get strange errors just copy the complete source into your console.    
     
 ### A permanent solution
+#### You have shell access
 - Copy the contents of the dist/* directory to fe_web
 ```bash
     scp dist/* primo@my_primo.example.com:/exlibris/primo/p4_1/ng/primo/home/system/tomcat/search/webapps/primo_library?libweb
@@ -30,7 +31,13 @@ Browsers are getting stricter with every release. If you get strange errors just
     <script type='text/javascript' src='/primo_library/libweb/jqprimo/jquery.PRIMO.min.js'></script>
 ```    
 
+#### You do not have shell access
 If you do not have shell access to your server you can ask ExLibris to upload these. 
+or if you do not need any functionality provided by helper jsp's you can only upload the library with the Primo File Uploader functionality.
+The video below gives a short explenation on how to install jQuery.PRIMO.js on a hosted SAAS environment.
+
+ [![hosted environment install](https://i.vimeocdn.com/video/543314892_590x332.jpg)](https://vimeo.com/145251116)
+ 
 We are working closely with ExLibris to make this a part of Primo. 
 
 The helper files will add extra functionality to the library like looking up records id in a deduped record, get the original record, ...
@@ -340,6 +347,12 @@ Extends the **DOM**.
     jQuery.PRIMO.facets.getByName('facet_lang')
 ```
 
+#### Get title for a facet by name
+_facet_lang_ is the technical name. Title will return the screen name. The screen name depends on the view language.
+```js
+    jQuery.PRIMO.facets.getByName('facet_lang').title
+```
+
 #### Get ALL value objects for facet_lang
 ```js
     jQuery.PRIMO.facets.getByName('facet_lang').values
@@ -501,7 +514,7 @@ Extends the **DOM**.
 **TODO: move to server** 
 
 ```js
-    var result = jQuery.PRIMO.search.by_query('any,contains,water');
+    var result = jQuery.PRIMO.search.byQuery('any,contains,water');
 ```    
 
 ##**QUERY**<a name="query"></a>
@@ -563,7 +576,7 @@ contains
  
 ### Get query as text (like the xService syntax)
 ```js
-    jQuery.PRIMO.query.query.toString();
+    jQuery.PRIMO.query.query.toText();
 ```
 
 returns 

@@ -1,5 +1,11 @@
 function _query(){
-    // parse the URL
+
+    /**
+     * parse the URL
+     * @method parseURL
+     * @private
+     * @returns {Object} parsed url
+     */
     function parseURL(){
         var result = jQuery(window.location.search.replace(/^\?/, '').split('&')).map(
             function(){
@@ -89,6 +95,12 @@ function _query(){
         searchPage = Math.floor(parseInt($('#resultsNumbersTile span:first').text().replace(/[^\d|-]*/g,'').split('-')[1])/(searchStep));
     }
 
+    /**
+     * Convert query object into text
+     * @method queryToString
+     * @private
+     * @returns {String} query text
+     */
     function queryToString(){
         var textQuery = "";
         if (isDeeplinkSearch()){
@@ -125,11 +137,18 @@ function _query(){
 
         return textQuery;
     }
+
+    /**
+     * check if query is a deep search
+     * @method isDeeplinkSearch
+     * @private
+     * @returns {Boolean}
+     */
     function isDeeplinkSearch(){
         return (window.location.href.match('dlSearch.do') != null);
     }
 
-    query.toString = function(){
+    query.toText = function(){
         return queryToString();
     };
 

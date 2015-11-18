@@ -1,6 +1,16 @@
 //Borrowed from http://absurdjs.com/ thanks Kasimir.
 function _template(){
-    function _render(html, options) {
+    function _render(html, options, isDeferred) {
+        isDeferred = typeof isDeferred == "undefined" ? false : isDeferred;
+
+        if (isDeferred) {
+            return _deferredRender(html, options);
+        } else {
+            return _normalRender(html, options);
+        }
+    }
+
+    function _normalRender(html, options) {
         var re = /{{(.+?)}}/g,
             reExp = /(^( )?(var|if|for|else|switch|case|break|{|}|;))(.*)?/g,
             code = 'with(obj) { var r=[];\n',
@@ -25,16 +35,29 @@ function _template(){
             console.error("'" + err.message + "'", " in \n\nCode:\n", code, "\n");
         }
         return result;
-    };
+    }
 
+    function _deferredRender(html, options) {
+        var d = $.Deferred();
+        try {
+            d.resolve(_render(html, options));
+        } catch(e) {
+            d.reject(function(){console.log("Error rendering template: " + id, e); return "";});
+        }
+        return d.promise();
+    }
 
     return {
-        render: function(html, options){
-            return _render(html, options);
+        render: function(html, options, isDeferred){
+            isDeferred = typeof isDeferred == "undefined" ? false : isDeferred;
+
+            return _render(html, options, isDeferred);
         },
-        renderById: function(id, options){
+        renderById: function(id, options, isDeferred){
+            isDeferred = typeof isDeferred == "undefined" ? false : isDeferred;
+
             var html = $('#'+id).html();
-            return _render(html, options);
+            return _render(html, options, isDeferred);
         }
     }
 }

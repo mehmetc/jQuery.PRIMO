@@ -21,6 +21,7 @@ function _facet() {
     jQuery.each(jQuery('#facetList .EXLFacetContainer'), function (i, container) {
         container = $(container);
         container.name = $(container).find('*[class*="EXLFacetTitleLabelPHolder"]').attr('class').replace('EXLFacetTitleLabelPHolder', '');
+        container.title =$(container).find('*[class*="EXLFacetTitleLabelPHolder"]').text().trim();
         container.values = [];
         $.each(container.find('.EXLFacet'), function (i, facet) {
             facet = $(facet);
@@ -33,12 +34,25 @@ function _facet() {
         facets.push(container);
     });
 
+    /**
+     * Get all facet names from DOM
+     * @method getNames
+     * @private
+     * @returns {Array} facet names
+     */
     facets.getNames = function () {
         return $.map(facets, function (facet,i) {
             return facet.name;
         })
     };
 
+    /**
+     * Get pointer to DOM from
+     * @method getByName
+     * @private
+     * @param {String} facet name one of what is returned by getNames()
+     * @returns {Object} facet
+     */
     facets.getByName = function(name){
       return facets.filter(function(facet, i){
           return facet.name === name;
@@ -48,7 +62,13 @@ function _facet() {
     return facets;
 }
 function _query(){
-    // parse the URL
+
+    /**
+     * parse the URL
+     * @method parseURL
+     * @private
+     * @returns {Object} parsed url
+     */
     function parseURL(){
         var result = jQuery(window.location.search.replace(/^\?/, '').split('&')).map(
             function(){
@@ -138,6 +158,12 @@ function _query(){
         searchPage = Math.floor(parseInt($('#resultsNumbersTile span:first').text().replace(/[^\d|-]*/g,'').split('-')[1])/(searchStep));
     }
 
+    /**
+     * Convert query object into text
+     * @method queryToString
+     * @private
+     * @returns {String} query text
+     */
     function queryToString(){
         var textQuery = "";
         if (isDeeplinkSearch()){
@@ -174,11 +200,18 @@ function _query(){
 
         return textQuery;
     }
+
+    /**
+     * check if query is a deep search
+     * @method isDeeplinkSearch
+     * @private
+     * @returns {Boolean}
+     */
     function isDeeplinkSearch(){
         return (window.location.href.match('dlSearch.do') != null);
     }
 
-    query.toString = function(){
+    query.toText = function(){
         return queryToString();
     };
 
@@ -428,12 +461,12 @@ function _search() {
     return {
         /**
          * Get Record by record_id
-         * @method by_record_id
+         * @method byRecordId
          * @private
          * @param {String} record id
          * @returns {Object} record hash
          */
-        by_record_id: function(rid, options){
+        byRecordId: function(rid, options){
             if (rid === undefined) {
                 throw 'You must supply a record id'
             }
@@ -458,12 +491,12 @@ function _search() {
         },
         /**
          * Get Record by a query in the form of index,match type,query
-         * @method by_query
+         * @method byQuery
          * @private
          * @param {String} query
          * @returns {Object} record hash
          */
-        by_query: function(query, options) {
+        byQuery: function(query, options) {
             var institution = (options !== undefined) && (options['institution'] !== undefined) ? options['institution'] : jQuery.PRIMO.session.view.code;
             var index       = (options !== undefined) && (options['index'] !== undefined) ? options['index'] : 1;
             var bulkSize    = (options !== undefined) && (options['bulkSize'] !== undefined) ? options['bulkSize'] : 10;
@@ -873,7 +906,17 @@ function _addTab(tabName, options) {
 }
 //Borrowed from http://absurdjs.com/ thanks Kasimir.
 function _template(){
-    function _render(html, options) {
+    function _render(html, options, isDeferred) {
+        isDeferred = typeof isDeferred == "undefined" ? false : isDeferred;
+
+        if (isDeferred) {
+            return _deferredRender(html, options);
+        } else {
+            return _normalRender(html, options);
+        }
+    }
+
+    function _normalRender(html, options) {
         var re = /{{(.+?)}}/g,
             reExp = /(^( )?(var|if|for|else|switch|case|break|{|}|;))(.*)?/g,
             code = 'with(obj) { var r=[];\n',
@@ -898,16 +941,29 @@ function _template(){
             console.error("'" + err.message + "'", " in \n\nCode:\n", code, "\n");
         }
         return result;
-    };
+    }
 
+    function _deferredRender(html, options) {
+        var d = $.Deferred();
+        try {
+            d.resolve(_render(html, options));
+        } catch(e) {
+            d.reject(function(){console.log("Error rendering template: " + id, e); return "";});
+        }
+        return d.promise();
+    }
 
     return {
-        render: function(html, options){
-            return _render(html, options);
+        render: function(html, options, isDeferred){
+            isDeferred = typeof isDeferred == "undefined" ? false : isDeferred;
+
+            return _render(html, options, isDeferred);
         },
-        renderById: function(id, options){
+        renderById: function(id, options, isDeferred){
+            isDeferred = typeof isDeferred == "undefined" ? false : isDeferred;
+
             var html = $('#'+id).html();
-            return _render(html, options);
+            return _render(html, options, isDeferred);
         }
     }
 }
@@ -1114,7 +1170,7 @@ function _xml2text(xmlDoc){
         }()),
         search: _search(),
         session: _getSessionData(),
-        version: "0.0.13",
+        version: "0.0.14",
         reload: function () {
             jQuery.PRIMO.session.reload();
         },

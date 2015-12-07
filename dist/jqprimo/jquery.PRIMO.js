@@ -20,13 +20,15 @@ function _facet() {
     var facets = [];
     jQuery.each(jQuery('#facetList .EXLFacetContainer'), function (i, container) {
         container = $(container);
-        container.name = $(container).find('*[class*="EXLFacetTitleLabelPHolder"]').attr('class').replace('EXLFacetTitleLabelPHolder', '');
-        container.title =$(container).find('*[class*="EXLFacetTitleLabelPHolder"]').text().trim();
+        container.name  = $(container).find('*[class*="EXLFacetTitleLabelPHolder"]').attr('class').replace('EXLFacetTitleLabelPHolder', '');
+        container.title = $(container).find('*[class*="EXLFacetTitleLabelPHolder"]').text().trim();
+        container.index = i;
         container.values = [];
-        $.each(container.find('.EXLFacet'), function (i, facet) {
+        $.each(container.find('.EXLFacet'), function (j, facet) {
             facet = $(facet);
-            facet.value = $(facet).find('a').text().trim();
-            facet.count = $(facet).find('span').text().trim().replace(/\.|\,/g, '').replace(/\(/g, '').replace(/\)/g, '');
+            facet.value = $(facet).find('a').text().trim() || '';
+            facet.url   = $(facet).find('a').attr('href') || '';
+            facet.count = $(facet).find('span').text().trim().replace(/\.|\,/g, '').replace(/\(/g, '').replace(/\)/g, '') || 0;
 
             container.values.push(facet);
         });
@@ -124,13 +126,17 @@ function _query(){
     var query = [];
     //Get the query. only search.do for now
     //TODO:Handle dlSearch.do
-    if (parsedURL.lookup('mode')[0] !== undefined && parsedURL.lookup('mode')[0] === 'Basic'){
+    if (parsedURL.lookup('mode')[0] !== undefined && parsedURL.lookup('mode')[0] === 'Basic'){   // simple search
         $(parsedURL.lookup('freeText')).each(function(i, el){
-            query.push({'index':'any', 'precision':'contains', 'term': el});
+            query.push({'index':'any', 'precision':'contains', 'term': el, 'operator': 'AND'});
         });
-    } else {
+    } else {    //advanced search
         $(parsedURL.lookup('freeText')).each(function(i, el){
-            query.push({'index': (parsedURL.lookup('UI'+i)[0] || 'any'), 'precision': (parsedURL.lookup('StartWith'+i)[0] || 'contains'), 'term': (parsedURL.lookup('freeText'+i)[0] || '')});
+            query.push({'index': (parsedURL.lookup('UI'+i)[0] || 'any'),
+                        'precision': (parsedURL.lookup('StartWith'+i)[0] || 'contains'),
+                        'term': (parsedURL.lookup('freeText'+i)[0] || ''),
+                        'operator': (parsedURL.lookup('boolOperator'+i)[0] || 'AND')
+                        });
         });
 
         var advancedSearchKeys= {};
@@ -142,7 +148,7 @@ function _query(){
         $(Object.keys(advancedSearchKeys)).each(function(i,el){
             var key = el;
             var value = parsedURL.lookup(advancedSearchKeys[key])[0] || '';
-            query.push({'index': key, 'precision':'contains', 'term': decodeURIComponent(value)});
+            query.push({'index': key, 'precision':'contains', 'term': decodeURIComponent(value), 'operator': 'AND'});
         })
     }
 
@@ -182,8 +188,8 @@ function _query(){
             jQuery(query).each(function(i, el) {
                 query[i] = el;
                 if (el.term.trim().length > 0){
-                    textQuery += textQuery.length > 0 ? ' AND ' : '';
                     textQuery += '(' + el.index + ' ' + el.precision + ' ' + el.term + ')';
+                    textQuery += el.term.length > 0 ? ' ' + el.operator.trim() + ' ' : '';
                 }
             });
 
@@ -191,7 +197,7 @@ function _query(){
                 jQuery(Object.keys(el)).each(function(j, key){
                     facets[i] = {index:key, term: el[key]};
                     if (el[key].trim().length > 0) {
-                        textQuery += textQuery.length > 0 ? ' AND ' : '';
+                        textQuery += textQuery.length > 0 ? ' ' + el.operator.trim() + ' ' : '';
                         textQuery += '(' + key + ' exact ' + el[key] + ')';
                     }
                 });

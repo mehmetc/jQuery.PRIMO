@@ -12,9 +12,9 @@
     It will lookup all records contained in a deduped record.
 
 */
+JSONArray obj = new JSONArray();
 try {
     String dedupID = request.getParameter("id");
-    JSONArray obj = new JSONArray();
 
     if ((dedupID != null) && (dedupID.length() > 0)) {
 
@@ -37,7 +37,8 @@ try {
     }
  } catch (Exception e) {
   e.printStackTrace();
-  obj.put("error", e.getMessage());
+  //obj.put("error", e.getMessage());
+  obj.add(e.getMessage());
  }
 %>
 

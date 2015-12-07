@@ -1176,7 +1176,7 @@ function _xml2text(xmlDoc){
         }()),
         search: _search(),
         session: _getSessionData(),
-        version: "0.0.14",
+        version: "0.0.15",
         reload: function () {
             jQuery.PRIMO.session.reload();
         },

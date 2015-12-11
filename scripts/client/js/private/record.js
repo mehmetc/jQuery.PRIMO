@@ -5,7 +5,7 @@
  * @param {Number} i record on page
  * @returns {Object} enhanced record pointer
  */
-function _record(i) {
+function _record(i, allData) {
     var recordData = null;
     var record = jQuery(jQuery('.EXLResult')[i]);
 
@@ -18,6 +18,7 @@ function _record(i) {
     record.materialType = function () {
         return _materialType(record)
     };
+    record.rawData = allData[record.id];
 
 // methods
     record.getIt1 = function () {
@@ -43,20 +44,27 @@ function _record(i) {
         return _getIsFrbrRecord(record)
     };
 
+    record.getPNX = function (type) {
+        return _getPNXData(record.id, type);
+    };
+
     record.getData = function () {
         if (!recordData) {
-            var data = _getPNXData(record.id, 'json');
-            if (data && data.length > 0) {
-                recordData = data[0];
+            var data;
+
+            if (record.rawData && record.rawData != null) {
+                recordData = record.rawData;
+            } else {
+                data = _getPNXData(record.id, "json");
+                if (data && data.length > 0) {
+                    recordData = data[0];
+                }
             }
         }
 
         return recordData;
     };
 
-    record.getPNX = function (type) {
-        return _getPNXData(record.id, type);
-    };
 
     return record;
 }
@@ -78,7 +86,8 @@ var _getPNXData = function (recordID, type) {
         async: false,
         type: 'get',
         dataType: 'xml',
-        url: jQuery.PRIMO.parameters.base_path + '/helpers/record_helper.jsp?id=' + recordID + '.pnx',
+        url: jQuery.PRIMO.parameters.base_path + '/record/' + recordID + '.pnx'
+        //url: jQuery.PRIMO.parameters.base_path + '/helpers/record_helper.jsp?id=' + recordID + '.pnx',
     }).then(function (data, textStatus, xhr) {
         if (xhr.getResponseHeader('Content-Type').search(/xml/) >= 0) {
             switch (type) {
@@ -129,6 +138,32 @@ var _getPNXData = function (recordID, type) {
     }
 };
 
+var _getLocalPNXData = function(record, type) {
+    var pnx = null;
+    var xml = _text2xml(record.rawData);
+
+    if (type === undefined) {
+        type = 'text'
+    }
+
+    switch (type) {
+        case 'text':
+            pnx = _xml2text(xml);
+            break;
+        case 'json':
+            pnx = $(_xml2json(xml));
+            break;
+        default:
+            pnx = $(xml);
+    }
+
+    if ($.isArray(pnx)) {
+        return pnx[0];
+    } else {
+        return pnx;
+    }
+};
+
 /**
  * Private method check if record is a deduped record
  * @private
@@ -170,7 +205,7 @@ function _getRecordIdInDedupRecord(id) {
                         type: 'get',
                         dataType: 'json',
                         data: {"id": id},
-                        url: jQuery.PRIMO.parameters.base_path + '/helpers/dedup_records_helper.jsp'
+                        url: jQuery.PRIMO.parameters.base_path + '/record/resolve'
                     }).done(function (data, textStatus, jqXHR) {
                         dedupRecordIds = data;
                     }).fail(function (data, textStatus, jqXHR) {

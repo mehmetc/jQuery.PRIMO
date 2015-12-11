@@ -91,7 +91,7 @@ var _getSessionData = function () {
                 type: 'get',
                 cache: false,
                 dataType: 'json',
-                url: jQuery.PRIMO.parameters.base_path + '/helpers/remote_session_data_helper.jsp',
+                url: jQuery.PRIMO.parameters.base_path + '/session',
                 success: function (data, textStatus, jqXHR) {
                     sessionData = jQuery.extend(true, {}, data);
 
@@ -122,11 +122,7 @@ var _getSessionData = function () {
             $.extend(sessionData.view, {
                 isFullDisplay: function () {
                     return window.isFullDisplay();
-                },
-
-                frontEndID: (function () {
-                    return _getFrontEndID.data();
-                }())
+                }
             });
 
             sessionData.reload = function () {

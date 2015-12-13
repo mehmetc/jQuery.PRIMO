@@ -1,6 +1,6 @@
 /**
  *
- * An ExLibris PRIMO convinience Library
+ * An ExLibris PRIMO convenience Library
  */
     jQuery.extend(jQuery.PRIMO, {
         facets: _facet(),

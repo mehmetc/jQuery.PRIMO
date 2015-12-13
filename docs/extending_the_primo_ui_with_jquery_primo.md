@@ -22,7 +22,7 @@ I'm certainly missing others since in computer science the sky is only limited b
 I think you understand by now that modifying Primo owned files on the server is not a a good way of doing things and that by only using the xServices or REST api's limits you to the data(PNX, facets, ...) but you actually need metadata to make decisions.
 
 ## Extending the UI instead of reinventing it.
-We have to face it we all want the same thing. We want to integrate an of the shelf product into our environment that is missing that "important" feature we absolutely need. You heared/read that you can implement this with one of the above methods and that is fine but the most difficult part to forsee is the cost that comes with choosing one of the above methods. 
+We have to face it we all want the same thing. We want to integrate an of the shelf product into our environment that is missing that "important" feature we absolutely need. You heard/read that you can implement this with one of the above methods and that is fine but the most difficult part to forsee is the cost that comes with choosing one of the above methods. 
 
 Lets back up and see what we need so we can implement new features. 
 >    * session information
@@ -30,7 +30,7 @@ Lets back up and see what we need so we can implement new features.
 >    * ability to upload HTML, CSS and Javascript files
 >    * ability to inject the loaded Javascript files into Primo
 
-The first 2 are missing from Primo's toolbox that is the gap that [jQuery.PRIMO]("http://www.github.com/mehmetc/jQuery.PRIMO") tries to fill. It gives you a Model that you can query by linking to existing functions hidden in the default Primo library and adding other usefull functions. A Model in [MVC](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller) of [MVVM](https://en.wikipedia.org/wiki/Model_View_ViewModel) patterns are mostly explained as structures that hold domain-specific data like user accounts (username, group, library, ...)
+The first 2 are missing from Primo's toolbox that is the gap that [jQuery.PRIMO]("http://www.github.com/mehmetc/jQuery.PRIMO") tries to fill. It gives you a Model that you can query by linking to existing functions hidden in the default Primo library and adding other useful functions. A Model in [MVC](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller) of [MVVM](https://en.wikipedia.org/wiki/Model_View_ViewModel) patterns are mostly explained as structures that hold domain-specific data like user accounts (username, group, library, ...)
 [Addy Osmani](http://addyosmani.com/) explains it as: 
 >Models hold information, but typically don’t handle behaviour. They don’t format information or influence how data appears in the browser as this isn’t their responsibility. Instead, formatting of data is handled by the View, whilst behaviour is considered business logic that should be encapsulated in another layer that interacts with the Model – the ViewModel...
 

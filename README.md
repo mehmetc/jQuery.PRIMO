@@ -1,15 +1,44 @@
 jQuery.PRIMO
 ============
 
-A client side convenience library for PRIMO v4.6 and better. 
-This is a work in progress. This might not work for you at all but if more people use it the better it will get. 
-If you want a feature, have a comment, found a bug or just want to talk ping me.  
+The missing model for PRIMO v4.9 and better.  
+This is a work in progress! 
+If you want a feature, have a comment, found a bug you can:
+
+- ping me. [new issue](https://github.com/mehmetc/jQuery.PRIMO/issues/new)
+- fork -> add changes -> send pull request  
 
 See the [releases](https://github.com/mehmetc/jQuery.PRIMO/releases) for downloads and release notes
 
 
-Installation  (TODO)
+Installation  
 ------------
+From February 2016 this will be a part of the general Primo release cycle. But if you have server access you can install it yourself.
+###### jQuery.PRIMO exists of 2 parts:
+
+- jQuery.PRIMO.js 
+This is the client library that needs to be loaded inside your browser. It will expose the model.
+- jQuery.PRIMO.jar (This is a seperate [project](https://github.com/mehmetc/jQuery.PRIMO.jar))
+This is the server library. It exposes a Rest API used by the client library. 
+  
+#### Install and setup 
+ 
+* copy jQuery.PRIMO.jar into $(fe_web)/WEB_INF/lib 
+* copy jQuery.PRIMO.min.js into $(fe_web)/javascript
+* add javascript snippet to a tile/html(footer.html for example)  
+```js 
+    <script type='text/javascript' src='/primo_library/libweb/javascript/jquery.PRIMO.min.js'></script>
+``` 
+* restart your front end
+* test is. 
+    - Open/Reload your view
+    - Open a console in your browser and type:
+```js    
+    jQuery.PRIMO.version;
+```     
+
+That is it.
+
 
 ### Just for testing
 You can inject the script into your results page, for testing. This works best using Firefox.
@@ -20,28 +49,6 @@ but it should give you an idea of what it can be used for.
 ``` 
 Browsers are getting stricter with every release. If you get strange errors just copy the complete source into your console.    
     
-### A permanent solution
-#### You have shell access
-- Copy the contents of the dist/* directory to fe_web
-```bash
-    scp dist/* primo@my_primo.example.com:/exlibris/primo/p4_1/ng/primo/home/system/tomcat/search/webapps/primo_library?libweb
-```    
-- Add jquery.PRIMO.min.js to **static_htmls/footer.html** or to a custom tile and add the snippet below to it
-```js    
-    <script type='text/javascript' src='/primo_library/libweb/jqprimo/jquery.PRIMO.min.js'></script>
-```    
-
-#### You do not have shell access
-If you do not have shell access to your server you can ask ExLibris to upload these. 
-or if you do not need any functionality provided by helper jsp's you can only upload the library with the Primo File Uploader functionality.
-The video below gives a short explenation on how to install jQuery.PRIMO.js on a hosted SAAS environment.
-
- [![hosted environment install](https://i.vimeocdn.com/video/543314892_590x332.jpg)](https://vimeo.com/145251116)
- 
-We are working closely with ExLibris to make this a part of Primo. 
-
-The helper files will add extra functionality to the library like looking up records id in a deduped record, get the original record, ...
-
 Compilation  (TODO)
 -----------
 If you would want to compile jquery.PRIMO.js then follow these steps
@@ -49,7 +56,7 @@ If you would want to compile jquery.PRIMO.js then follow these steps
 - `npm install`
 - `gulp`
 
-#Object model
+#Exposed model
 ![jQuery.PRIMO Object Model](./docs/jquery.PRIMO.png "jQuery.PRIMO Object Model")
 
 #Examples  
@@ -76,11 +83,8 @@ If you would want to compile jquery.PRIMO.js then follow these steps
 
 
 ##**SESSION**<a name="session"></a>
-Some functions and attributes will only be available when the _remote_session_data_helper.jsp_ file is installed on the server.
-Otherwise it will load a minimal of session data from the default _getUserInfoServlet_ service.
-    
-_**In other words if you can not find the attribute or function you are looking for see if the helper methods are getting loaded.**_
-    
+Some functions and attributes will only be available when [jQuery.PRIMO.jar](https://github.com/mehmetc/jQuery.PRIMO.jar) is installed on the server.
+Otherwise it will load a minimum of session data from the default _getUserInfoServlet_ service.    
 
 - [user](#user)
 - [view](#view)
@@ -161,15 +165,7 @@ _**In other words if you can not find the attribute or function you are looking 
 ```
 
 #### Get the current view frontend id
-The file:
-```
-  jqprimo/helpers/frontend_id
-```
-should contain a marker for the frontend where jQuery.PRIMO is installed.
-For example:
-    staging or test or 1 or ...
-
-Then you can get the frontend id this can be handy when you are debugging
+This is the hashCode() of the machines hostname. It is usefull for debugging or if you want a feature to only work on for example your staging enviroment.
 
 ```js
     jQuery.PRIMO.session.view.frontEndID;    
@@ -193,9 +189,7 @@ Then you can get the frontend id this can be handy when you are debugging
 ```    
 
 ##**PDS**<a name="pds"></a>
-
-If you want this to work you need to add the borrower info url to the helper file. 
-Please look at _jqprimo/helpers/remote_session_date_helper.jsp_ for the instructions.
+When you are logged in you will get the bor-info from PDS. It serializes the xml into json.  
 
 #### Get the url for PDS
 ```js
@@ -208,8 +202,6 @@ Please look at _jqprimo/helpers/remote_session_date_helper.jsp_ for the instruct
 ```
 
 ### GET borrower info _Object_ from PDS. 
-This uses General Configuration -> Installation -> PDS_URL to build the PDS access url 
-and it returns /bor/bor-info. 
 ```js
     jQuery.PRIMO.session.pds.borInfo;
 ```

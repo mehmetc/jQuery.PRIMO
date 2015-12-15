@@ -204,8 +204,7 @@ function _getRecordIdInDedupRecord(id) {
                         async: false,
                         type: 'get',
                         dataType: 'json',
-                        data: {"id": id},
-                        url: jQuery.PRIMO.parameters.base_path + '/record/resolve'
+                        url: jQuery.PRIMO.parameters.base_path + '/record/resolve/' + id
                     }).done(function (data, textStatus, jqXHR) {
                         dedupRecordIds = data;
                     }).fail(function (data, textStatus, jqXHR) {

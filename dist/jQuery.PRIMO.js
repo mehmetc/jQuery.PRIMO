@@ -440,8 +440,7 @@ function _getRecordIdInDedupRecord(id) {
                         async: false,
                         type: 'get',
                         dataType: 'json',
-                        data: {"id": id},
-                        url: jQuery.PRIMO.parameters.base_path + '/record/resolve'
+                        url: jQuery.PRIMO.parameters.base_path + '/record/resolve/' + id
                     }).done(function (data, textStatus, jqXHR) {
                         dedupRecordIds = data;
                     }).fail(function (data, textStatus, jqXHR) {
@@ -512,7 +511,7 @@ function _search() {
                 throw 'You must supply a record id'
             }
 
-            var institution = (options !== undefined) && (options['institution'] !== undefined) ? options['institution'] : jQuery.PRIMO.session.view.code;
+            var institution = (options !== undefined) && (options['institution'] !== undefined) ? options['institution'] : jQuery.PRIMO.session.view.institution.code;
             var index       = (options !== undefined) && (options['index'] !== undefined) ? options['index'] : 1;
             var bulkSize    = (options !== undefined) && (options['bulkSize'] !== undefined) ? options['bulkSize'] : 10;
 
@@ -538,14 +537,17 @@ function _search() {
          * @returns {Object} record hash
          */
         byQuery: function(query, options) {
-            var institution = (options !== undefined) && (options['institution'] !== undefined) ? options['institution'] : jQuery.PRIMO.session.view.code;
+            var institution = (options !== undefined) && (options['institution'] !== undefined) ? options['institution'] : jQuery.PRIMO.session.view.institution.code;
             var index       = (options !== undefined) && (options['index'] !== undefined) ? options['index'] : 1;
             var bulkSize    = (options !== undefined) && (options['bulkSize'] !== undefined) ? options['bulkSize'] : 10;
 
             if (Array.isArray(query)){
+                var tmpQuery = "";
                 jQuery.each(query, function(index, value){
-                query =+ '&query=' + value;
+                    tmpQuery += '&query=' + value;
                 });
+
+                query = tmpQuery;
             } else {
                 query = '&query=' + query;
             }

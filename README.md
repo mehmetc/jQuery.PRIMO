@@ -29,8 +29,15 @@ This is the server library. It exposes a Rest API used by the client library.
 ```js 
     <script type='text/javascript' src='/primo_library/libweb/javascript/jquery.PRIMO.min.js'></script>
 ``` 
+* if you want to be able to retrieve the Original Record(MarcXML) then you need to uncomment or add
+```xml
+    <mapping resource="com/exlibris/primo/domain/entities/OriginalSourceRecord.hbm.xml"/>
+```          
+to the hibernate mapping file /exlibris/primo/p4_1/ng/primo/home/system/search/conf/hibernate.cfg.xml
+The hibernate mapping file will be overwritten after each update this means you need to reapply this patch
+after every Primo upgrade.
 * restart your front end
-* test is. 
+* test it. 
     - Open/Reload your view
     - Open a console in your browser and type:
 ```js    

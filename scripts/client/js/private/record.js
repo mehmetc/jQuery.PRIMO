@@ -208,7 +208,7 @@ function _getRecordIdInDedupRecord(id) {
                     }).done(function (data, textStatus, jqXHR) {
                         dedupRecordIds = data;
                     }).fail(function (data, textStatus, jqXHR) {
-                        console.log('You need the dedup_records_helper.jsp file');
+                        console.log('Error resolving ' + id);
                     });
                 }
             }

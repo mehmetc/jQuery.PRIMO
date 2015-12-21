@@ -27,7 +27,7 @@ function _tab(record, i) {
             tab = $(record.tabs).find('a[title*="' + i + '"]').parent();
         }
 
-        if (tab == null || tab.length == 0){
+        if (tab == null || tab.length == 0) {
             tab = $(record).find('li[class*="' + i + '"]');
         }
     }
@@ -36,7 +36,7 @@ function _tab(record, i) {
         var tabName;
         if (jQuery(tab).attr('name') === undefined) {
             //tabName = jQuery(tab).attr('id').split('-')[1].toLowerCase().replace('tab','');
-            tabName = jQuery(tab).attr('id').split('-')[1].replace('tab','');
+            tabName = jQuery(tab).attr('id').split('-')[1].replace('tab', '');
         } else {
             tabName = jQuery(tab).attr('name').trim();
         }
@@ -84,7 +84,9 @@ function _tab(record, i) {
                 currentTab.container.html(header + body);
                 currentTab.container.data('loaded', true);
             }
-        }
+        };
+        tab.onTabReady = function (record, tab) {
+        };
     }
 
     return tab;
@@ -132,10 +134,35 @@ function _tabs(record) {
             });
     };
 
-    tabData.getByName = function(name){
+    tabData.getByName = function (name) {
         return _tab(record, name);
     };
 
+    //add event listener
+    //jQuery.each(tabData, function (index, tab) {
+    //
+    //    var events = jQuery._data($("#" + tab.id)[0],'events');
+    //    if (events == undefined || (events && events.ajaxComplete && events.ajaxComplete.length == 0)) {
+    //        jQuery("#"+tab.id).ajaxComplete(function (event, xhr, settings) {
+    //            var thisTab = this;
+    //
+    //            if (event.target.id == thisTab.id && thisTab.isOpen()) {
+    //                if (thisTab.container != null) {
+    //                    var tabUtils = thisTab.container[0].tabUtils;
+    //
+    //                    if (tabUtils && tabUtils.isTabReady()) {
+    //                        if ($.inArray('onTabReady', Object.keys(thisTab)) != -1) {
+    //                           // var record = $(thisTab).closest(".EXLResult");
+    //                            thisTab.onTabReady(record, thisTab);
+    //                        }
+    //                    }
+    //                }
+    //            }
+    //
+    //        });
+    //    }
+    //
+    //});
 
     return tabData;
 }
@@ -161,7 +188,7 @@ function _addTab(tabName, options) {
     defaults = {
         record: null,
         state: 'disabled',
-        css: tabName.trim().toLowerCase().replace(/tab$/,'') + 'Tab',
+        css: tabName.trim().toLowerCase().replace(/tab$/, '') + 'Tab',
         url: '#',
         url_target: '',
         tooltip: '',
@@ -177,8 +204,8 @@ function _addTab(tabName, options) {
 
     if (jQuery.inArray(tabName, o.record.tabs.getNames()) < 0) { // not in tablist -> new tab
         //var customTabId = 'exlidResult'+ o.record.index + '-' + tabName.toLowerCase() + 'Tab';
-        var customTabId = 'exlidResult'+ o.record.index + '-' + tabName;
-        var customTab = '<li id="' + customTabId +'" class="EXLResultTab ' + o.css + '" name="' + tabName + '">';
+        var customTabId = 'exlidResult' + o.record.index + '-' + tabName;
+        var customTab = '<li id="' + customTabId + '" class="EXLResultTab ' + o.css + '" name="' + tabName + '">';
         customTab += '  <span style="display:' + (o.state == 'disabled' ? 'block' : 'none') + '">' + o.label + '</span>';
         customTab += '  <a id="' + customTabId + 'Link" style="display:' + (o.state == 'disabled' ? 'none' : 'block') + '"';
         customTab += '     title="' + (o.tooltip || o.label) + '"';
@@ -206,7 +233,7 @@ function _addTab(tabName, options) {
         }
     }
     else {
-      //TODO
+        //TODO
     }
 
     o.record.tabs = _tabs(o.record);

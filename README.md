@@ -68,6 +68,7 @@ If you would want to compile jquery.PRIMO.js then follow these steps
 
 #Examples  
 - [Use templates and keep your sanity](#templates)     
+- [Events & Callbacks](#events)     
      
 ###### Objects             
 - [misc](#misc)  
@@ -669,6 +670,24 @@ Render the template using some variables
     jQuery('#exlidSearchTabs').append(renderedTemplate);
 </script>
 ```      
+      
+# **Events & Callbacks**<a name="events"></a>
+!!This is experimental might change in the future.
+
+#### tabReady CALLBACK
+When a tab is done loading a tabReady callback is fired. You can attach a callback function to a tab that gets executed when the tab content is loaded.
+
+
+Add the record id to the details tab when opened.
+```js
+    $.each($.PRIMO.records, function(record){
+        record.tabs.getByName('DetailsTab')[0].onTabReady = function(record, container, tab){
+            $($(container.tabUtils.tabContent).find('.EXLDetailsContent ul')[0]).prepend("<li><strong>Record id:</strong><span class='EXLDetailsDisplayVal'>" + record.id + "</span></li>");
+        }
+    });
+```      
+      
+      
       
 # Contributing to jQuery.PRIMO
 - Fork the project.

@@ -189,7 +189,7 @@ function _query(){
                 query[i] = el;
                 if (el.term.trim().length > 0){
                     textQuery += '(' + el.index + ' ' + el.precision + ' ' + el.term + ')';
-                    textQuery += el.term.length > 0 ? ' ' + el.operator.trim() + ' ' : '';
+                    textQuery += ((el.term.length > 0) && (i < query.length-1)) ? ' ' + el.operator.trim() + ' ' : '';
                 }
             });
 
@@ -197,7 +197,7 @@ function _query(){
                 jQuery(Object.keys(el)).each(function(j, key){
                     facets[i] = {index:key, term: el[key]};
                     if (el[key].trim().length > 0) {
-                        textQuery += textQuery.length > 0 ? ' ' + el.operator.trim() + ' ' : '';
+                        textQuery += ((textQuery.length > 0)  && (i < query.length-1)) ? ' ' + el.operator.trim() + ' ' : '';
                         textQuery += '(' + key + ' exact ' + el[key] + ')';
                     }
                 });
@@ -743,6 +743,9 @@ function _tab(record, i) {
 
     if (typeof(i) == 'number') {
         tab = record.find('.EXLResultTab')[i];
+        if (tab.length == 0) {
+            tab = null;
+        }
     }
     else if (typeof(i) == 'string') {
         tab = record.find('.EXLResultTab:contains("' + i + '")');
@@ -761,6 +764,10 @@ function _tab(record, i) {
 
         if (tab == null || tab.length == 0) {
             tab = $(record).find('li[class*="' + i + '"]');
+        }
+
+        if (tab !== null && tab.length == 0) {
+            tab = null;
         }
     }
 
@@ -812,13 +819,17 @@ function _tab(record, i) {
             if ((!currentTab.container.data('loaded')) || (o.reload)) {
                 var popOut = '<div class="EXLTabHeaderContent">' + o.headerContent + '</div><div class="EXLTabHeaderButtons"><ul><li class="EXLTabHeaderButtonPopout"><a href="' + o.url + '" target="_blank"><img src="../images/icon_popout_tab.png" /></a></li><li></li><li class="EXLTabHeaderButtonCloseTabs"><a href="#" title="hide tabs"><img src="../images/icon_close_tabs.png" alt="hide tabs"></a></li></ul></div>';
                 var header = '<div class="EXLTabHeader">' + popOut + '</div>';
-                var body = '<div class="EXLTabContent">' + content + '</div>'
+                var body = '<div class="EXLTabContent">' + content + '</div>';
                 currentTab.container.html(header + body);
                 currentTab.container.data('loaded', true);
+                currentTab.container[0].tabUtils.state.status = exlTabState.FETCHED;
             }
         };
-        tab.onTabReady = function (record, tab) {
-        };
+
+        if ($.inArray('onTabReady', Object.keys(tab)) == -1) {
+            tab.onTabReady = function (record, tab) {
+            };
+        }
     }
 
     return tab;
@@ -869,32 +880,6 @@ function _tabs(record) {
     tabData.getByName = function (name) {
         return _tab(record, name);
     };
-
-    //add event listener
-    //jQuery.each(tabData, function (index, tab) {
-    //
-    //    var events = jQuery._data($("#" + tab.id)[0],'events');
-    //    if (events == undefined || (events && events.ajaxComplete && events.ajaxComplete.length == 0)) {
-    //        jQuery("#"+tab.id).ajaxComplete(function (event, xhr, settings) {
-    //            var thisTab = this;
-    //
-    //            if (event.target.id == thisTab.id && thisTab.isOpen()) {
-    //                if (thisTab.container != null) {
-    //                    var tabUtils = thisTab.container[0].tabUtils;
-    //
-    //                    if (tabUtils && tabUtils.isTabReady()) {
-    //                        if ($.inArray('onTabReady', Object.keys(thisTab)) != -1) {
-    //                           // var record = $(thisTab).closest(".EXLResult");
-    //                            thisTab.onTabReady(record, thisTab);
-    //                        }
-    //                    }
-    //                }
-    //            }
-    //
-    //        });
-    //    }
-    //
-    //});
 
     return tabData;
 }
@@ -953,6 +938,16 @@ function _addTab(tabName, options) {
             o.record.find('.EXLSummary').append(customTabContainer);
         }
 
+        var containerName = 'Container-' + o.css;
+        var container = o.record.find('*[class*="' + containerName + '"]');
+
+        if (container) {
+            container = container[0];
+           if (jQuery.inArray('tabUtils', Object.keys(container)) == -1) {
+               container.tabUtils = new TabSet(containerName, o.record.tabs.length, container, o.record.id, tabName);
+           }
+        }
+
         var customClassQuery = '.' + o.css + ' a';
         if (o.click !== null) {
             o.record.find(customClassQuery).click(function (e) {
@@ -960,6 +955,8 @@ function _addTab(tabName, options) {
                 if (o.state == 'enabled') {
                     tab = o.record.tabs.getByName(tabName);
                     o.click(e, tab, o.record, o);
+                    _addTabReadyHandler(o.record, tab[0]);
+
                 }
             });
         }
@@ -969,6 +966,26 @@ function _addTab(tabName, options) {
     }
 
     o.record.tabs = _tabs(o.record);
+}
+
+function _addTabReadyHandler(record, tab){
+    if (tab.container != null) {
+        var tabUtils = tab.container[0].tabUtils;
+        if (tabUtils) {
+            var timeoutID = null;
+            timeoutID = setInterval(function() {
+                if (tabUtils.isTabReady()) {
+                    clearTimeout(timeoutID);
+                    console.log("firing tabReady for " + tab.id);
+                    if ($.inArray('onTabReady', Object.keys(tab)) != -1) {
+                        tab.onTabReady(record, tab.container[0], tab);
+                    }
+                } else {
+                    console.log("not ready tabReady for " + tab.id);
+                }
+            }, 500);
+        }
+    }
 }
 //Borrowed from http://absurdjs.com/ thanks Kasimir.
 function _template(){
@@ -1253,24 +1270,26 @@ jQuery.extend(jQuery.PRIMO, {
                 var recordIndex = parseInt($(tab).closest('.EXLResult')[0].id.replace(/[^\d]/g,''));
                 var record      = jQuery.PRIMO.records[recordIndex];
 
-                if (tab.container != null) {
-                    var tabUtils = tab.container[0].tabUtils;
-                    if (tabUtils) {
-                        var timeoutID = null;
-                        timeoutID = setInterval(function() {
-                                if (tabUtils.isTabReady()) {
-                                    clearTimeout(timeoutID);
-                                    console.log("firing tabReady for " + tab.id);
-                                    if ($.inArray('onTabReady', Object.keys(tab)) != -1) {
-                                        tab.onTabReady(record, tab.container[0], tab);
-                                    }
-                                } else {
-                                    console.log("not ready tabReady for " + tab.id);
-                                }
-                            }, 500);
+                _addTabReadyHandler(record, tab);
 
-                    }
-                }
+                //if (tab.container != null) {
+                //    var tabUtils = tab.container[0].tabUtils;
+                //    if (tabUtils) {
+                //        var timeoutID = null;
+                //        timeoutID = setInterval(function() {
+                //                if (tabUtils.isTabReady()) {
+                //                    clearTimeout(timeoutID);
+                //                    console.log("firing tabReady for " + tab.id);
+                //                    if ($.inArray('onTabReady', Object.keys(tab)) != -1) {
+                //                        tab.onTabReady(record, tab.container[0], tab);
+                //                    }
+                //                } else {
+                //                    console.log("not ready tabReady for " + tab.id);
+                //                }
+                //            }, 500);
+                //
+                //    }
+                //}
             } catch (e) {
                 console.log(e);
             }

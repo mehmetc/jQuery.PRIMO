@@ -31,24 +31,26 @@ jQuery.extend(jQuery.PRIMO, {
                 var recordIndex = parseInt($(tab).closest('.EXLResult')[0].id.replace(/[^\d]/g,''));
                 var record      = jQuery.PRIMO.records[recordIndex];
 
-                if (tab.container != null) {
-                    var tabUtils = tab.container[0].tabUtils;
-                    if (tabUtils) {
-                        var timeoutID = null;
-                        timeoutID = setInterval(function() {
-                                if (tabUtils.isTabReady()) {
-                                    clearTimeout(timeoutID);
-                                    console.log("firing tabReady for " + tab.id);
-                                    if ($.inArray('onTabReady', Object.keys(tab)) != -1) {
-                                        tab.onTabReady(record, tab.container[0], tab);
-                                    }
-                                } else {
-                                    console.log("not ready tabReady for " + tab.id);
-                                }
-                            }, 500);
+                _addTabReadyHandler(record, tab);
 
-                    }
-                }
+                //if (tab.container != null) {
+                //    var tabUtils = tab.container[0].tabUtils;
+                //    if (tabUtils) {
+                //        var timeoutID = null;
+                //        timeoutID = setInterval(function() {
+                //                if (tabUtils.isTabReady()) {
+                //                    clearTimeout(timeoutID);
+                //                    console.log("firing tabReady for " + tab.id);
+                //                    if ($.inArray('onTabReady', Object.keys(tab)) != -1) {
+                //                        tab.onTabReady(record, tab.container[0], tab);
+                //                    }
+                //                } else {
+                //                    console.log("not ready tabReady for " + tab.id);
+                //                }
+                //            }, 500);
+                //
+                //    }
+                //}
             } catch (e) {
                 console.log(e);
             }

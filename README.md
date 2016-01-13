@@ -680,7 +680,7 @@ When a tab is done loading a tabReady callback is fired. You can attach a callba
 
 Add the record id to the details tab when opened.
 ```js
-    $.each($.PRIMO.records, function(record){
+    $.each($.PRIMO.records, function(i, record){
         record.tabs.getByName('DetailsTab')[0].onTabReady = function(record, container, tab){
             $($(container.tabUtils.tabContent).find('.EXLDetailsContent ul')[0]).prepend("<li><strong>Record id:</strong><span class='EXLDetailsDisplayVal'>" + record.id + "</span></li>");
         }

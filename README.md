@@ -513,9 +513,25 @@ Extends the **DOM**.
 *This wraps the default [XServices API](https://developers.exlibrisgroup.com/primo/apis/webservices/xservices/search/briefsearch) this means that 'WS and XS IP' restrictions apply*
 **TODO: move to server** 
 
+###### function byQuery(query, options)
+
+*query*: can be a string or an array 
+*options*: can be one of
+    - institution: your institution code defaults = view institution code
+    - index: index to start returning from defaults = 1
+    - bulkSize: amount of records to return. default = 10
+
+### search for water
 ```js
     var result = jQuery.PRIMO.search.byQuery('any,contains,water');
 ```    
+
+### search for water in title and pollution in subject return 100 records and start from position 10 on the result set.
+```js
+    var result = jQuery.PRIMO.search.byQuery(['title,contains,water', 'subject,contains, pollution'], {"index":10, "bulkSize:"100"});
+```    
+
+
 
 ##**QUERY**<a name="query"></a>
 Parses the URL and scrapes the **DOM** for data.

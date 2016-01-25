@@ -124,7 +124,7 @@ function _query(){
                 query[i] = el;
                 if (el.term.trim().length > 0){
                     textQuery += '(' + el.index + ' ' + el.precision + ' ' + el.term + ')';
-                    textQuery += el.term.length > 0 ? ' ' + el.operator.trim() + ' ' : '';
+                    textQuery += ((el.term.length > 0) && (i < query.length-1)) ? ' ' + el.operator.trim() + ' ' : '';
                 }
             });
 
@@ -132,7 +132,7 @@ function _query(){
                 jQuery(Object.keys(el)).each(function(j, key){
                     facets[i] = {index:key, term: el[key]};
                     if (el[key].trim().length > 0) {
-                        textQuery += textQuery.length > 0 ? ' ' + el.operator.trim() + ' ' : '';
+                        textQuery += ((textQuery.length > 0)  && (i < query.length-1)) ? ' ' + el.operator.trim() + ' ' : '';
                         textQuery += '(' + key + ' exact ' + el[key] + ')';
                     }
                 });

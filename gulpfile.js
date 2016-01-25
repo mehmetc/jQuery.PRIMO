@@ -31,27 +31,21 @@ gulp.task('bump', function(){
         .pipe(gulp.dest('./'));
 });
 
-gulp.task('scripts', ['clean', 'build', 'helpers'], function(){
-    return gulp.src('./dist/jqprimo/jquery.PRIMO.js')
-        .pipe(concat('jquery.PRIMO.min.js'))
+gulp.task('scripts', ['clean', 'build'], function(){
+    return gulp.src('./dist/jQuery.PRIMO.js')
+        .pipe(concat('jQuery.PRIMO.min.js'))
         .pipe(uglify())
-        .pipe(gulp.dest('./dist/jqprimo'));
+        .pipe(gulp.dest('./dist'));
 });
 
 gulp.task('build', function(){
     var pkg = getPackageJson();
     return gulp.src(paths.scripts)
-        .pipe(concat('jquery.PRIMO.js'))
+        .pipe(concat('jQuery.PRIMO.js'))
         .pipe(template({version: pkg.version}))
         .pipe(jqc())
-        .pipe(gulp.dest('./dist/jqprimo'));
+        .pipe(gulp.dest('./dist'));
 });
-
-gulp.task('helpers', function(){
-    return gulp.src('./scripts/server/*')
-        .pipe(gulp.dest('./dist/jqprimo/helpers'));
-});
-
 
 gulp.task('watch', function(){
    gulp.watch(paths.scripts, ['scripts']);

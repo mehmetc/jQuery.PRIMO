@@ -11,6 +11,9 @@ function _tab(record, i) {
 
     if (typeof(i) == 'number') {
         tab = record.find('.EXLResultTab')[i];
+        if (tab.length == 0) {
+            tab = null;
+        }
     }
     else if (typeof(i) == 'string') {
         tab = record.find('.EXLResultTab:contains("' + i + '")');
@@ -27,8 +30,12 @@ function _tab(record, i) {
             tab = $(record.tabs).find('a[title*="' + i + '"]').parent();
         }
 
-        if (tab == null || tab.length == 0){
+        if (tab == null || tab.length == 0) {
             tab = $(record).find('li[class*="' + i + '"]');
+        }
+
+        if (tab !== null && tab.length == 0) {
+            tab = null;
         }
     }
 
@@ -36,7 +43,7 @@ function _tab(record, i) {
         var tabName;
         if (jQuery(tab).attr('name') === undefined) {
             //tabName = jQuery(tab).attr('id').split('-')[1].toLowerCase().replace('tab','');
-            tabName = jQuery(tab).attr('id').split('-')[1].replace('tab','');
+            tabName = jQuery(tab).attr('id').split('-')[1].replace('tab', '');
         } else {
             tabName = jQuery(tab).attr('name').trim();
         }
@@ -80,10 +87,16 @@ function _tab(record, i) {
             if ((!currentTab.container.data('loaded')) || (o.reload)) {
                 var popOut = '<div class="EXLTabHeaderContent">' + o.headerContent + '</div><div class="EXLTabHeaderButtons"><ul><li class="EXLTabHeaderButtonPopout"><a href="' + o.url + '" target="_blank"><img src="../images/icon_popout_tab.png" /></a></li><li></li><li class="EXLTabHeaderButtonCloseTabs"><a href="#" title="hide tabs"><img src="../images/icon_close_tabs.png" alt="hide tabs"></a></li></ul></div>';
                 var header = '<div class="EXLTabHeader">' + popOut + '</div>';
-                var body = '<div class="EXLTabContent">' + content + '</div>'
+                var body = '<div class="EXLTabContent">' + content + '</div>';
                 currentTab.container.html(header + body);
                 currentTab.container.data('loaded', true);
+                currentTab.container[0].tabUtils.state.status = exlTabState.FETCHED;
             }
+        };
+
+        if ($.inArray('onTabReady', Object.keys(tab)) == -1) {
+            tab.onTabReady = function (record, tab) {
+            };
         }
     }
 
@@ -132,10 +145,9 @@ function _tabs(record) {
             });
     };
 
-    tabData.getByName = function(name){
+    tabData.getByName = function (name) {
         return _tab(record, name);
     };
-
 
     return tabData;
 }
@@ -161,7 +173,7 @@ function _addTab(tabName, options) {
     defaults = {
         record: null,
         state: 'disabled',
-        css: tabName.trim().toLowerCase().replace(/tab$/,'') + 'Tab',
+        css: tabName.trim().toLowerCase().replace(/tab$/, '') + 'Tab',
         url: '#',
         url_target: '',
         tooltip: '',
@@ -177,8 +189,8 @@ function _addTab(tabName, options) {
 
     if (jQuery.inArray(tabName, o.record.tabs.getNames()) < 0) { // not in tablist -> new tab
         //var customTabId = 'exlidResult'+ o.record.index + '-' + tabName.toLowerCase() + 'Tab';
-        var customTabId = 'exlidResult'+ o.record.index + '-' + tabName;
-        var customTab = '<li id="' + customTabId +'" class="EXLResultTab ' + o.css + '" name="' + tabName + '">';
+        var customTabId = 'exlidResult' + o.record.index + '-' + tabName;
+        var customTab = '<li id="' + customTabId + '" class="EXLResultTab ' + o.css + '" name="' + tabName + '">';
         customTab += '  <span style="display:' + (o.state == 'disabled' ? 'block' : 'none') + '">' + o.label + '</span>';
         customTab += '  <a id="' + customTabId + 'Link" style="display:' + (o.state == 'disabled' ? 'none' : 'block') + '"';
         customTab += '     title="' + (o.tooltip || o.label) + '"';
@@ -194,6 +206,16 @@ function _addTab(tabName, options) {
             o.record.find('.EXLSummary').append(customTabContainer);
         }
 
+        var containerName = 'Container-' + o.css;
+        var container = o.record.find('*[class*="' + containerName + '"]');
+
+        if (container) {
+            container = container[0];
+           if (jQuery.inArray('tabUtils', Object.keys(container)) == -1) {
+               container.tabUtils = new TabSet(containerName, o.record.tabs.length, container, o.record.id, tabName);
+           }
+        }
+
         var customClassQuery = '.' + o.css + ' a';
         if (o.click !== null) {
             o.record.find(customClassQuery).click(function (e) {
@@ -201,13 +223,43 @@ function _addTab(tabName, options) {
                 if (o.state == 'enabled') {
                     tab = o.record.tabs.getByName(tabName);
                     o.click(e, tab, o.record, o);
+                    _addTabReadyHandler(o.record, tab[0]);
+
                 }
             });
         }
     }
     else {
-      //TODO
+        //TODO
     }
 
     o.record.tabs = _tabs(o.record);
+}
+
+
+/**
+ * Adds a callback to the tabs
+ * @method _addTabReadyHandler
+ * @private
+ * @param {Object} record object
+ * @param {Object} tab object
+ **/
+function _addTabReadyHandler(record, tab){
+    if (tab.container != null) {
+        var tabUtils = tab.container[0].tabUtils;
+        if (tabUtils) {
+            var timeoutID = null;
+            timeoutID = setInterval(function() {
+                if (tabUtils.isTabReady()) {
+                    clearTimeout(timeoutID);
+                    console.log("firing tabReady for " + tab.id);
+                    if ($.inArray('onTabReady', Object.keys(tab)) != -1) {
+                        tab.onTabReady(record, tab.container[0], tab);
+                    }
+                } else {
+                    console.log("not ready tabReady for " + tab.id);
+                }
+            }, 500);
+        }
+    }
 }

@@ -12,7 +12,7 @@
  * @namespace jQuery.PRIMO
  */
     jQuery.PRIMO = {
-        parameters: {base_path: '/primo_library/libweb/jqprimo'}
+        parameters: {base_path: '/primo_library/libweb/jqp'}
     };
 
 
@@ -189,7 +189,7 @@ function _query(){
                 query[i] = el;
                 if (el.term.trim().length > 0){
                     textQuery += '(' + el.index + ' ' + el.precision + ' ' + el.term + ')';
-                    textQuery += el.term.length > 0 ? ' ' + el.operator.trim() + ' ' : '';
+                    textQuery += ((el.term.length > 0) && (i < query.length-1)) ? ' ' + el.operator.trim() + ' ' : '';
                 }
             });
 
@@ -197,7 +197,7 @@ function _query(){
                 jQuery(Object.keys(el)).each(function(j, key){
                     facets[i] = {index:key, term: el[key]};
                     if (el[key].trim().length > 0) {
-                        textQuery += textQuery.length > 0 ? ' ' + el.operator.trim() + ' ' : '';
+                        textQuery += ((textQuery.length > 0)  && (i < query.length-1)) ? ' ' + el.operator.trim() + ' ' : '';
                         textQuery += '(' + key + ' exact ' + el[key] + ')';
                     }
                 });
@@ -241,7 +241,7 @@ function _query(){
  * @param {Number} i record on page
  * @returns {Object} enhanced record pointer
  */
-function _record(i) {
+function _record(i, allData) {
     var recordData = null;
     var record = jQuery(jQuery('.EXLResult')[i]);
 
@@ -254,6 +254,7 @@ function _record(i) {
     record.materialType = function () {
         return _materialType(record)
     };
+    record.rawData = allData[record.id];
 
 // methods
     record.getIt1 = function () {
@@ -279,20 +280,27 @@ function _record(i) {
         return _getIsFrbrRecord(record)
     };
 
+    record.getPNX = function (type) {
+        return _getPNXData(record.id, type);
+    };
+
     record.getData = function () {
         if (!recordData) {
-            var data = _getPNXData(record.id, 'json');
-            if (data && data.length > 0) {
-                recordData = data[0];
+            var data;
+
+            if (record.rawData && record.rawData != null) {
+                recordData = record.rawData;
+            } else {
+                data = _getPNXData(record.id, "json");
+                if (data && data.length > 0) {
+                    recordData = data[0];
+                }
             }
         }
 
         return recordData;
     };
 
-    record.getPNX = function (type) {
-        return _getPNXData(record.id, type);
-    };
 
     return record;
 }
@@ -314,7 +322,8 @@ var _getPNXData = function (recordID, type) {
         async: false,
         type: 'get',
         dataType: 'xml',
-        url: jQuery.PRIMO.parameters.base_path + '/helpers/record_helper.jsp?id=' + recordID + '.pnx',
+        url: jQuery.PRIMO.parameters.base_path + '/record/' + recordID + '.pnx'
+        //url: jQuery.PRIMO.parameters.base_path + '/helpers/record_helper.jsp?id=' + recordID + '.pnx',
     }).then(function (data, textStatus, xhr) {
         if (xhr.getResponseHeader('Content-Type').search(/xml/) >= 0) {
             switch (type) {
@@ -365,6 +374,32 @@ var _getPNXData = function (recordID, type) {
     }
 };
 
+var _getLocalPNXData = function(record, type) {
+    var pnx = null;
+    var xml = _text2xml(record.rawData);
+
+    if (type === undefined) {
+        type = 'text'
+    }
+
+    switch (type) {
+        case 'text':
+            pnx = _xml2text(xml);
+            break;
+        case 'json':
+            pnx = $(_xml2json(xml));
+            break;
+        default:
+            pnx = $(xml);
+    }
+
+    if ($.isArray(pnx)) {
+        return pnx[0];
+    } else {
+        return pnx;
+    }
+};
+
 /**
  * Private method check if record is a deduped record
  * @private
@@ -405,12 +440,11 @@ function _getRecordIdInDedupRecord(id) {
                         async: false,
                         type: 'get',
                         dataType: 'json',
-                        data: {"id": id},
-                        url: jQuery.PRIMO.parameters.base_path + '/helpers/dedup_records_helper.jsp'
+                        url: jQuery.PRIMO.parameters.base_path + '/record/resolve/' + id
                     }).done(function (data, textStatus, jqXHR) {
                         dedupRecordIds = data;
                     }).fail(function (data, textStatus, jqXHR) {
-                        console.log('You need the dedup_records_helper.jsp file');
+                        console.log('Error resolving ' + id);
                     });
                 }
             }
@@ -477,7 +511,7 @@ function _search() {
                 throw 'You must supply a record id'
             }
 
-            var institution = (options !== undefined) && (options['institution'] !== undefined) ? options['institution'] : jQuery.PRIMO.session.view.code;
+            var institution = (options !== undefined) && (options['institution'] !== undefined) ? options['institution'] : jQuery.PRIMO.session.view.institution.code;
             var index       = (options !== undefined) && (options['index'] !== undefined) ? options['index'] : 1;
             var bulkSize    = (options !== undefined) && (options['bulkSize'] !== undefined) ? options['bulkSize'] : 10;
 
@@ -503,14 +537,17 @@ function _search() {
          * @returns {Object} record hash
          */
         byQuery: function(query, options) {
-            var institution = (options !== undefined) && (options['institution'] !== undefined) ? options['institution'] : jQuery.PRIMO.session.view.code;
+            var institution = (options !== undefined) && (options['institution'] !== undefined) ? options['institution'] : jQuery.PRIMO.session.view.institution.code;
             var index       = (options !== undefined) && (options['index'] !== undefined) ? options['index'] : 1;
             var bulkSize    = (options !== undefined) && (options['bulkSize'] !== undefined) ? options['bulkSize'] : 10;
 
             if (Array.isArray(query)){
+                var tmpQuery = "";
                 jQuery.each(query, function(index, value){
-                query =+ '&query=' + value;
+                    tmpQuery += '&query=' + value;
                 });
+
+                query = tmpQuery;
             } else {
                 query = '&query=' + query;
             }
@@ -636,7 +673,7 @@ var _getSessionData = function () {
                 type: 'get',
                 cache: false,
                 dataType: 'json',
-                url: jQuery.PRIMO.parameters.base_path + '/helpers/remote_session_data_helper.jsp',
+                url: jQuery.PRIMO.parameters.base_path + '/session',
                 success: function (data, textStatus, jqXHR) {
                     sessionData = jQuery.extend(true, {}, data);
 
@@ -667,11 +704,7 @@ var _getSessionData = function () {
             $.extend(sessionData.view, {
                 isFullDisplay: function () {
                     return window.isFullDisplay();
-                },
-
-                frontEndID: (function () {
-                    return _getFrontEndID.data();
-                }())
+                }
             });
 
             sessionData.reload = function () {
@@ -710,6 +743,9 @@ function _tab(record, i) {
 
     if (typeof(i) == 'number') {
         tab = record.find('.EXLResultTab')[i];
+        if (tab.length == 0) {
+            tab = null;
+        }
     }
     else if (typeof(i) == 'string') {
         tab = record.find('.EXLResultTab:contains("' + i + '")');
@@ -726,8 +762,12 @@ function _tab(record, i) {
             tab = $(record.tabs).find('a[title*="' + i + '"]').parent();
         }
 
-        if (tab == null || tab.length == 0){
+        if (tab == null || tab.length == 0) {
             tab = $(record).find('li[class*="' + i + '"]');
+        }
+
+        if (tab !== null && tab.length == 0) {
+            tab = null;
         }
     }
 
@@ -735,7 +775,7 @@ function _tab(record, i) {
         var tabName;
         if (jQuery(tab).attr('name') === undefined) {
             //tabName = jQuery(tab).attr('id').split('-')[1].toLowerCase().replace('tab','');
-            tabName = jQuery(tab).attr('id').split('-')[1].replace('tab','');
+            tabName = jQuery(tab).attr('id').split('-')[1].replace('tab', '');
         } else {
             tabName = jQuery(tab).attr('name').trim();
         }
@@ -779,10 +819,16 @@ function _tab(record, i) {
             if ((!currentTab.container.data('loaded')) || (o.reload)) {
                 var popOut = '<div class="EXLTabHeaderContent">' + o.headerContent + '</div><div class="EXLTabHeaderButtons"><ul><li class="EXLTabHeaderButtonPopout"><a href="' + o.url + '" target="_blank"><img src="../images/icon_popout_tab.png" /></a></li><li></li><li class="EXLTabHeaderButtonCloseTabs"><a href="#" title="hide tabs"><img src="../images/icon_close_tabs.png" alt="hide tabs"></a></li></ul></div>';
                 var header = '<div class="EXLTabHeader">' + popOut + '</div>';
-                var body = '<div class="EXLTabContent">' + content + '</div>'
+                var body = '<div class="EXLTabContent">' + content + '</div>';
                 currentTab.container.html(header + body);
                 currentTab.container.data('loaded', true);
+                currentTab.container[0].tabUtils.state.status = exlTabState.FETCHED;
             }
+        };
+
+        if ($.inArray('onTabReady', Object.keys(tab)) == -1) {
+            tab.onTabReady = function (record, tab) {
+            };
         }
     }
 
@@ -831,10 +877,9 @@ function _tabs(record) {
             });
     };
 
-    tabData.getByName = function(name){
+    tabData.getByName = function (name) {
         return _tab(record, name);
     };
-
 
     return tabData;
 }
@@ -860,7 +905,7 @@ function _addTab(tabName, options) {
     defaults = {
         record: null,
         state: 'disabled',
-        css: tabName.trim().toLowerCase().replace(/tab$/,'') + 'Tab',
+        css: tabName.trim().toLowerCase().replace(/tab$/, '') + 'Tab',
         url: '#',
         url_target: '',
         tooltip: '',
@@ -876,8 +921,8 @@ function _addTab(tabName, options) {
 
     if (jQuery.inArray(tabName, o.record.tabs.getNames()) < 0) { // not in tablist -> new tab
         //var customTabId = 'exlidResult'+ o.record.index + '-' + tabName.toLowerCase() + 'Tab';
-        var customTabId = 'exlidResult'+ o.record.index + '-' + tabName;
-        var customTab = '<li id="' + customTabId +'" class="EXLResultTab ' + o.css + '" name="' + tabName + '">';
+        var customTabId = 'exlidResult' + o.record.index + '-' + tabName;
+        var customTab = '<li id="' + customTabId + '" class="EXLResultTab ' + o.css + '" name="' + tabName + '">';
         customTab += '  <span style="display:' + (o.state == 'disabled' ? 'block' : 'none') + '">' + o.label + '</span>';
         customTab += '  <a id="' + customTabId + 'Link" style="display:' + (o.state == 'disabled' ? 'none' : 'block') + '"';
         customTab += '     title="' + (o.tooltip || o.label) + '"';
@@ -893,6 +938,16 @@ function _addTab(tabName, options) {
             o.record.find('.EXLSummary').append(customTabContainer);
         }
 
+        var containerName = 'Container-' + o.css;
+        var container = o.record.find('*[class*="' + containerName + '"]');
+
+        if (container) {
+            container = container[0];
+           if (jQuery.inArray('tabUtils', Object.keys(container)) == -1) {
+               container.tabUtils = new TabSet(containerName, o.record.tabs.length, container, o.record.id, tabName);
+           }
+        }
+
         var customClassQuery = '.' + o.css + ' a';
         if (o.click !== null) {
             o.record.find(customClassQuery).click(function (e) {
@@ -900,15 +955,45 @@ function _addTab(tabName, options) {
                 if (o.state == 'enabled') {
                     tab = o.record.tabs.getByName(tabName);
                     o.click(e, tab, o.record, o);
+                    _addTabReadyHandler(o.record, tab[0]);
+
                 }
             });
         }
     }
     else {
-      //TODO
+        //TODO
     }
 
     o.record.tabs = _tabs(o.record);
+}
+
+
+/**
+ * Adds a callback to the tabs
+ * @method _addTabReadyHandler
+ * @private
+ * @param {Object} record object
+ * @param {Object} tab object
+ **/
+function _addTabReadyHandler(record, tab){
+    if (tab.container != null) {
+        var tabUtils = tab.container[0].tabUtils;
+        if (tabUtils) {
+            var timeoutID = null;
+            timeoutID = setInterval(function() {
+                if (tabUtils.isTabReady()) {
+                    clearTimeout(timeoutID);
+                    console.log("firing tabReady for " + tab.id);
+                    if ($.inArray('onTabReady', Object.keys(tab)) != -1) {
+                        tab.onTabReady(record, tab.container[0], tab);
+                    }
+                } else {
+                    console.log("not ready tabReady for " + tab.id);
+                }
+            }, 500);
+        }
+    }
 }
 //Borrowed from http://absurdjs.com/ thanks Kasimir.
 function _template(){
@@ -1164,24 +1249,52 @@ function _xml2text(xmlDoc){
  *
  * An ExLibris PRIMO convenience Library
  */
-    jQuery.extend(jQuery.PRIMO, {
-        facets: _facet(),
-        query: _query(),
-        records: (function () {
-            var data = [];
-            var records_count = jQuery('.EXLResult').length;
+jQuery.extend(jQuery.PRIMO, {
+    facets: _facet(),
+    query: _query(),
+    records: (function () {
+        var data = [];
+        var records_count = jQuery('.EXLResult').length;
+        var allData = [];
 
-            for (var j = 0; j < records_count; j++) data.push(_record(j));
-            return $(data);
-        }()),
-        search: _search(),
-        session: _getSessionData(),
-        version: "0.0.15",
-        reload: function () {
-            jQuery.PRIMO.session.reload();
-        },
-        template: _template()
-    });
+        jQuery.ajax({
+            async: false,
+            type: 'get',
+            dataType: 'json',
+            url: '/primo_library/libweb/jqp/record/*.json'
+        }).then(function (data, event, xhr) {
+            jQuery.each(data, function (i, d) {
+                allData[d.control.recordid] = d;
+            });
+
+        });
+
+        for (var j = 0; j < records_count; j++) data.push(_record(j, allData));
+
+// add tabReady handler to all tabs
+        $('.EXLResultTabs a').on('click', function (event, xhr, settings) {
+            try {
+                var tab = $(this).parent()[0];
+                var recordIndex = parseInt($(tab).closest('.EXLResult')[0].id.replace(/[^\d]/g,''));
+                var record      = jQuery.PRIMO.records[recordIndex];
+
+                _addTabReadyHandler(record, tab);
+
+            } catch (e) {
+                console.log(e);
+            }
+        });
+
+        return $(data);
+    }()),
+    search: _search(),
+    session: _getSessionData(),
+    version: "1.0.1",
+    reload: function () {
+        jQuery.PRIMO.session.reload();
+    },
+    template: _template()
+});
 
 
 })(jQuery);

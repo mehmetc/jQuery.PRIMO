@@ -1,0 +1,134 @@
+<!--
+  Use this file to test if jQuery.PRIMO.jar is installed correctly
+
+  MIT license
+  KULeuven/LIBIS (c) 2016
+  Created by mehmetc on 2016-01-08.
+ -->
+
+<!--
+LOAD the CLIENT library. It will extend jQuery with a queryable PRIMO model
+jQuery.PRIMO.jar needs to be installed on the server
+-->
+<script type='text/javascript' src='/primo_library/libweb/javascript/jQuery.PRIMO.js'></script>
+
+<!-- Template to create the contents of the 'Information' tab for every record
+record is passed as a parameter
+ -->
+<script type='text/template' id='InfoTab-tpl'>
+  <div style="height:16em;overflow:auto">
+    <div class="EXLDetailsTabContent">
+      <div class="EXLDetailsContent">
+        <ul>
+          <li>
+            <strong>Record Index:</strong>
+            <span class="EXLDetailsDisplayVal">{{ record.index }}</span>
+          </li>
+          <li>
+            <strong>Record ID:</strong>
+            <span class="EXLDetailsDisplayVal">
+              {{ record.id }}
+              {{ if (record.isDedupedRecord()) { }}
+                ({{ record.getDedupedRecordIds().join(", ") }})
+              {{ } }}
+            </span>
+          </li>
+          <li>
+            <strong>On eShelf:</strong>
+            <span class="EXLDetailsDisplayVal">{{ record.isOnEShelf() }}</span>
+          </li>
+          <li>
+            <strong>Remote Record:</strong>
+            <span class="EXLDetailsDisplayVal">{{ record.isRemoteRecord() }}</span>
+          </li>
+          <li>
+            <strong>Deduped Record:</strong>
+            <span class="EXLDetailsDisplayVal">{{ record.isDedupedRecord() }}</span>
+          </li>
+          <li>
+            <strong>Active tabs:</strong>
+            <span class="EXLDetailsDisplayVal">{{ record.tabs.getEnabled().join(", ") }}</span>
+          </li>
+          <li>
+            <strong>GetIt1:</strong>
+            <span class="EXLDetailsDisplayVal">{{ record.getIt1() }}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</script>
+
+<!-- Template to create a skeleton for the session data -->
+<script type='text/template' id='JQP-tpl'>
+  {{ if (session != null) { }}
+  <table style="background-color: white; border: 1px solid black; margin: 10px;">
+    <tr>
+      {{ var keys = Object.keys(session); }}
+      {{ for(var i=0;i<keys.length;i++) { }}
+        {{ var key=keys[i]; }}
+        <td valign='top'>
+          <strong>{{ key }}:</strong>
+          {{ $.PRIMO.template.renderById('Session-tpl', {"session": session[key]}) }}
+        </td>
+      {{ } }}
+    </tr>
+  </table>
+  {{ } }}
+</script>
+
+<!-- Template to print out the session data -->
+<script type='text/template' id='Session-tpl'>
+  {{ if (session != null) { }}
+  <ul class='sessionData' style="float:none;">
+    {{ if (typeof session == 'string'){ }}
+      <div>{{session}}</div>
+    {{ } else{ }}
+      {{ var keys = Object.keys(session); }}
+      {{ for(var i=0;i<keys.length;i++) { }}
+      <li style="float:none;">
+        {{ var key=keys[i]; }}
+        <strong>{{ key }}:</strong>
+        {{ if ($.inArray(typeof session[key], ['string', 'number']) != -1) { }}
+          <div>{{session[key]}}</div>
+        {{ } else if(typeof session[key] == 'object'){ }}
+          <div>{{ $.PRIMO.template.renderById('Session-tpl', {"session": session[key]}) }}</div>
+        {{ } else if(typeof session[key] == 'function' && key.match('^get|is') != null){ }}
+          <div>{{ session[key].call() }}</div>
+        {{ }else{ }}
+          <div> {{ typeof session[key] }}</div>
+        {{ } }}
+      </li>
+      {{ } }}
+    {{ } }}
+  </ul>
+  {{ } }}
+</script>
+
+<!-- Set everything into motion: create tab per record and add session data to footer -->
+<script type="text/javascript">
+  jQuery(document).ready(function() {
+    // add Information tab to every record
+    $.each($.PRIMO.records, function(i, record) {
+      record.tabs.addTab('InfoTab', {
+        state: 'enabled',
+        label: 'Information',
+        click: function(event, tab, record, options) {
+          if (tab.isOpen()) {
+            tab.close();
+          } else {
+            var tabContent = $.PRIMO.template.renderById('InfoTab-tpl', {"record": record});
+            tab.open(tabContent, {reload: true});
+          }
+        }
+      });
+    });
+
+    //add session data to footer
+    $('#footerEXL').append($.PRIMO.template.renderById('JQP-tpl', { "session": $.PRIMO.session }));
+    $('.sessionData').click(function() {
+      this.toggle();
+    })
+
+  });
+</script>

@@ -968,6 +968,14 @@ function _addTab(tabName, options) {
     o.record.tabs = _tabs(o.record);
 }
 
+
+/**
+ * Adds a callback to the tabs
+ * @method _addTabReadyHandler
+ * @private
+ * @param {Object} record object
+ * @param {Object} tab object
+ **/
 function _addTabReadyHandler(record, tab){
     if (tab.container != null) {
         var tabUtils = tab.container[0].tabUtils;
@@ -1272,24 +1280,6 @@ jQuery.extend(jQuery.PRIMO, {
 
                 _addTabReadyHandler(record, tab);
 
-                //if (tab.container != null) {
-                //    var tabUtils = tab.container[0].tabUtils;
-                //    if (tabUtils) {
-                //        var timeoutID = null;
-                //        timeoutID = setInterval(function() {
-                //                if (tabUtils.isTabReady()) {
-                //                    clearTimeout(timeoutID);
-                //                    console.log("firing tabReady for " + tab.id);
-                //                    if ($.inArray('onTabReady', Object.keys(tab)) != -1) {
-                //                        tab.onTabReady(record, tab.container[0], tab);
-                //                    }
-                //                } else {
-                //                    console.log("not ready tabReady for " + tab.id);
-                //                }
-                //            }, 500);
-                //
-                //    }
-                //}
             } catch (e) {
                 console.log(e);
             }
@@ -1299,7 +1289,7 @@ jQuery.extend(jQuery.PRIMO, {
     }()),
     search: _search(),
     session: _getSessionData(),
-    version: "1.0.0",
+    version: "1.0.1",
     reload: function () {
         jQuery.PRIMO.session.reload();
     },

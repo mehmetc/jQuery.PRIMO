@@ -236,6 +236,14 @@ function _addTab(tabName, options) {
     o.record.tabs = _tabs(o.record);
 }
 
+
+/**
+ * Adds a callback to the tabs
+ * @method _addTabReadyHandler
+ * @private
+ * @param {Object} record object
+ * @param {Object} tab object
+ **/
 function _addTabReadyHandler(record, tab){
     if (tab.container != null) {
         var tabUtils = tab.container[0].tabUtils;

@@ -526,12 +526,10 @@ Extends the **DOM**.
     var result = jQuery.PRIMO.search.byQuery('any,contains,water');
 ```    
 
-### search for water in title and pollution in subject return 100 records and start from position 10 on the result set.
+### search for water in title and pollution in subject return 100 records starting from position 10 on the result set.
 ```js
-    var result = jQuery.PRIMO.search.byQuery(['title,contains,water', 'subject,contains, pollution'], {"index":10, "bulkSize:"100"});
+    var result = jQuery.PRIMO.search.byQuery(['title,contains,water', 'subject,contains,pollution'], {"index":10, "bulkSize":100});
 ```    
-
-
 
 ##**QUERY**<a name="query"></a>
 Parses the URL and scrapes the **DOM** for data.

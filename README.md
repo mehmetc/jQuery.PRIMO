@@ -27,7 +27,7 @@ This is the server library. It exposes a Rest API used by the client library.
 * copy jQuery.PRIMO.min.js into $(fe_web)/javascript
 * add javascript snippet to a tile/html(footer.html for example)  
 ```js 
-    <script type='text/javascript' src='/primo_library/libweb/javascript/jquery.PRIMO.min.js'></script>
+    <script type='text/javascript' src='/primo_library/libweb/javascript/jQuery.PRIMO.min.js'></script>
 ``` 
 * if you want to be able to retrieve the Original Record(MarcXML) then you need to uncomment or add
 ```xml

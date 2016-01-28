@@ -46,6 +46,11 @@ after every Primo upgrade.
 
 That is it.
 
+I also created 2 screencasts to lead you.
+
+[![Installing jQuery.PRIMO](https://i.vimeocdn.com/video/553515621_590x332.jpg)](https://vimeo.com/153275621 "Installing jQuery.PRIMO v1.0.0 ")
+[![Setup jQuery.PRIMO.js](https://i.vimeocdn.com/video/553619741_590x332.jpg)](https://vimeo.com/153357262 "Setup jQuery.PRIMO")
+
 
 ### Just for testing
 You can inject the script into your results page, for testing. This works best using Firefox.

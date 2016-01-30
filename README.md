@@ -46,7 +46,7 @@ after every Primo upgrade.
 
 That is it.
 
-I also created 2 screencasts to lead you.
+I also created 2 screencasts(no audio) as a guide.
 
 [![Installing jQuery.PRIMO](https://i.vimeocdn.com/video/553515621_590x332.jpg)](https://vimeo.com/153275621 "Installing jQuery.PRIMO v1.0.0 ")
 [![Setup jQuery.PRIMO.js](https://i.vimeocdn.com/video/553619741_590x332.jpg)](https://vimeo.com/153357262 "Setup jQuery.PRIMO")
@@ -57,7 +57,7 @@ You can inject the script into your results page, for testing. This works best u
 Open the JavaScript console and paste the next line. You will not be able to use the more advanced functions 
 but it should give you an idea of what it can be used for.
 ```js
-    $.getScript('https://raw.githubusercontent.com/mehmetc/jQuery.PRIMO/master/dist/jqprimo/jquery.PRIMO.js')
+    $.getScript('https://raw.githubusercontent.com/mehmetc/jQuery.PRIMO/master/dist/jqprimo/jQuery.PRIMO.js')
 ``` 
 Browsers are getting stricter with every release. If you get strange errors just copy the complete source into your console.    
     

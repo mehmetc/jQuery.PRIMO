@@ -10,14 +10,11 @@ If you want a feature, have a comment, found a bug you can:
 
 See the [releases](https://github.com/mehmetc/jQuery.PRIMO/releases) for downloads and release notes
 
-
-
-### WARNING 
-jQuery.PRIMO.js is intended to be used with the **vanilla**(unchanged) view. Our philosophy is **"extend not rewrite"**. 
-So, this might NOT work is you changed/removed/renamed class names, id's etc. 
+### WARNING
+jQuery.PRIMO.js is intended to be used with a **vanilla**(unchanged) view. 
+You might not get the intended experience if you changed/removed/renamed class names, id's etc. 
 
 [Contact me](https://github.com/mehmetc/jQuery.PRIMO/issues/new) if you are experiencing problems. 
-
 Installation  
 ------------
 From February 2016 this will be a part of the general Primo release cycle. But if you have server access you can install it yourself.

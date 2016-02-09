@@ -8,98 +8,100 @@
  */
 function _tab(record, i) {
     var tab = null;
-
-    if (typeof(i) == 'number') {
-        tab = record.find('.EXLResultTab')[i];
-        if (tab.length == 0) {
-            tab = null;
+    try {
+        if (typeof(i) == 'number') {
+            tab = record.find('.EXLResultTab')[i];
+            if (tab.length == 0) {
+                tab = null;
+            }
         }
-    }
-    else if (typeof(i) == 'string') {
-        tab = record.find('.EXLResultTab:contains("' + i + '")');
+        else if (typeof(i) == 'string') {
+            tab = record.find('.EXLResultTab:contains("' + i + '")');
 
-        if (tab.length == 0) {
-            tab = record.find(".EXLResultTab[id*='" + i + "']");
-        }
+            if (tab.length == 0) {
+                tab = record.find(".EXLResultTab[id*='" + i + "']");
+            }
 
-        if (tab.length == 0) {
-            tab = record.find(".EXLResultTab[id*='" + i.toLowerCase() + "']");
-        }
+            if (tab.length == 0) {
+                tab = record.find(".EXLResultTab[id*='" + i.toLowerCase() + "']");
+            }
 
-        if (tab == null || tab.length == 0) {
-            tab = $(record.tabs).find('a[title*="' + i + '"]').parent();
-        }
+            if (tab == null || tab.length == 0) {
+                tab = $(record.tabs).find('a[title*="' + i + '"]').parent();
+            }
 
-        if (tab == null || tab.length == 0) {
-            tab = $(record).find('li[class*="' + i + '"]');
-        }
+            if (tab == null || tab.length == 0) {
+                tab = $(record).find('li[class*="' + i + '"]');
+            }
 
-        if (tab !== null && tab.length == 0) {
-            tab = null;
-        }
-    }
-
-    if (tab !== null) {
-        var tabName;
-        if (jQuery(tab).attr('name') === undefined) {
-            //tabName = jQuery(tab).attr('id').split('-')[1].toLowerCase().replace('tab','');
-            tabName = jQuery(tab).attr('id').split('-')[1].replace('tab', '');
-        } else {
-            tabName = jQuery(tab).attr('name').trim();
+            if (tab !== null && tab.length == 0) {
+                tab = null;
+            }
         }
 
-        var container = null;
-        var containerName = 'Container-' + tabName.trim().toLowerCase().replace(/tab$/g, '') + 'Tab';
-        c = record.find('*[class*="' + containerName + '"]');
+        if (tab !== null) {
+            var tabName;
+            if (jQuery(tab).attr('name') === undefined) {
+                //tabName = jQuery(tab).attr('id').split('-')[1].toLowerCase().replace('tab','');
+                tabName = jQuery(tab).attr('id').split('-')[1].replace('tab', '');
+            } else {
+                tabName = jQuery(tab).attr('name').trim();
+            }
 
-        if (c.length > 0) {
-            container = c;
-        }
+            var container = null;
+            var containerName = 'Container-' + tabName.trim().toLowerCase().replace(/tab$/g, '') + 'Tab';
+            c = record.find('*[class*="' + containerName + '"]');
 
-        tab.index = i;
-        tab.label = jQuery(tab).find('a').text().trim();
-        tab.name = tabName;
-        tab.container = container;
-        tab.isOpen = function () {
-            return jQuery(tab).hasClass('EXLResultSelectedTab');
-        };
-        tab.close = function () {
-            if (!jQuery.PRIMO.session.view.isFullDisplay()) {
+            if (c.length > 0) {
+                container = c;
+            }
+
+            tab.index = i;
+            tab.label = jQuery(tab).find('a').text().trim();
+            tab.name = tabName;
+            tab.container = container;
+            tab.isOpen = function () {
+                return jQuery(tab).hasClass('EXLResultSelectedTab');
+            };
+            tab.close = function () {
+                if (!jQuery.PRIMO.session.view.isFullDisplay()) {
+                    record.find('.EXLResultSelectedTab').removeClass('EXLResultSelectedTab');
+                    record.find('.EXLTabsRibbon').addClass('EXLTabsRibbonClosed');
+                    tab.container.hide();
+                }
+            };
+            tab.open = function (content, options) {
+                defaults = {
+                    reload: false,
+                    headerContent: '',
+                    url: '#'
+                };
+                var o = jQuery.extend(defaults, options);
+                currentTab = record.tabs.getByName(tabName);
+                record.find('.EXLTabsRibbonClosed').removeClass('EXLTabsRibbonClosed');
                 record.find('.EXLResultSelectedTab').removeClass('EXLResultSelectedTab');
-                record.find('.EXLTabsRibbon').addClass('EXLTabsRibbonClosed');
-                tab.container.hide();
-            }
-        };
-        tab.open = function (content, options) {
-            defaults = {
-                reload: false,
-                headerContent: '',
-                url: '#'
-            };
-            var o = jQuery.extend(defaults, options);
-            currentTab = record.tabs.getByName(tabName);
-            record.find('.EXLTabsRibbonClosed').removeClass('EXLTabsRibbonClosed');
-            record.find('.EXLResultSelectedTab').removeClass('EXLResultSelectedTab');
-            jQuery(currentTab).addClass('EXLResultSelectedTab');
-            record.find('.EXLResultTabContainer').hide();
-            currentTab.container.show();
+                jQuery(currentTab).addClass('EXLResultSelectedTab');
+                record.find('.EXLResultTabContainer').hide();
+                currentTab.container.show();
 
-            if ((!currentTab.container.data('loaded')) || (o.reload)) {
-                var popOut = '<div class="EXLTabHeaderContent">' + o.headerContent + '</div><div class="EXLTabHeaderButtons"><ul><li class="EXLTabHeaderButtonPopout"><a href="' + o.url + '" target="_blank"><img src="../images/icon_popout_tab.png" /></a></li><li></li><li class="EXLTabHeaderButtonCloseTabs"><a href="#" title="hide tabs"><img src="../images/icon_close_tabs.png" alt="hide tabs"></a></li></ul></div>';
-                var header = '<div class="EXLTabHeader">' + popOut + '</div>';
-                var body = '<div class="EXLTabContent">' + content + '</div>';
-                currentTab.container.html(header + body);
-                currentTab.container.data('loaded', true);
-                currentTab.container[0].tabUtils.state.status = exlTabState.FETCHED;
-            }
-        };
-
-        if ($.inArray('onTabReady', Object.keys(tab)) == -1) {
-            tab.onTabReady = function (record, tab) {
+                if ((!currentTab.container.data('loaded')) || (o.reload)) {
+                    var popOut = '<div class="EXLTabHeaderContent">' + o.headerContent + '</div><div class="EXLTabHeaderButtons"><ul><li class="EXLTabHeaderButtonPopout"><a href="' + o.url + '" target="_blank"><img src="../images/icon_popout_tab.png" /></a></li><li></li><li class="EXLTabHeaderButtonCloseTabs"><a href="#" title="hide tabs"><img src="../images/icon_close_tabs.png" alt="hide tabs"></a></li></ul></div>';
+                    var header = '<div class="EXLTabHeader">' + popOut + '</div>';
+                    var body = '<div class="EXLTabContent">' + content + '</div>';
+                    currentTab.container.html(header + body);
+                    currentTab.container.data('loaded', true);
+                    currentTab.container[0].tabUtils.state.status = exlTabState.FETCHED;
+                }
             };
+
+            if ($.inArray('onTabReady', Object.keys(tab)) == -1) {
+                tab.onTabReady = function (record, tab) {
+                };
+            }
         }
+    } catch (error) {
+        console.log("unable to load tab");
     }
-
     return tab;
 };
 
@@ -211,9 +213,9 @@ function _addTab(tabName, options) {
 
         if (container) {
             container = container[0];
-           if (jQuery.inArray('tabUtils', Object.keys(container)) == -1) {
-               container.tabUtils = new TabSet(containerName, o.record.tabs.length, container, o.record.id, tabName);
-           }
+            if (jQuery.inArray('tabUtils', Object.keys(container)) == -1) {
+                container.tabUtils = new TabSet(containerName, o.record.tabs.length, container, o.record.id, tabName);
+            }
         }
 
         var customClassQuery = '.' + o.css + ' a';
@@ -244,12 +246,12 @@ function _addTab(tabName, options) {
  * @param {Object} record object
  * @param {Object} tab object
  **/
-function _addTabReadyHandler(record, tab){
+function _addTabReadyHandler(record, tab) {
     if (tab.container != null) {
         var tabUtils = tab.container[0].tabUtils;
         if (tabUtils) {
             var timeoutID = null;
-            timeoutID = setInterval(function() {
+            timeoutID = setInterval(function () {
                 if (tabUtils.isTabReady()) {
                     clearTimeout(timeoutID);
                     console.log("firing tabReady for " + tab.id);

@@ -11,6 +11,11 @@ If you want a feature, have a comment, found a bug you can:
 See the [releases](https://github.com/mehmetc/jQuery.PRIMO/releases) for downloads and release notes
 
 
+
+### WARNING
+    jQuery.PRIMO might NOT work is you changed the JSP pages like removed/renamed class named etc. 
+[Contact me](https://github.com/mehmetc/jQuery.PRIMO/issues/new) if you are experiencing problems. 
+
 Installation  
 ------------
 From February 2016 this will be a part of the general Primo release cycle. But if you have server access you can install it yourself.
@@ -25,7 +30,7 @@ This is the server library. It exposes a Rest API used by the client library.
  
 * copy jQuery.PRIMO.jar into $(fe_web)/WEB_INF/lib 
 * copy jQuery.PRIMO.min.js into $(fe_web)/javascript
-* add javascript snippet to a tile/html(footer.html for example)  
+* add javascript snippet to a tile/html(footer.html for [example](https://github.com/mehmetc/jQuery.PRIMO/raw/master/test/resources/jQPFooter.html))  
 ```js 
     <script type='text/javascript' src='/primo_library/libweb/javascript/jQuery.PRIMO.min.js'></script>
 ``` 
@@ -57,7 +62,7 @@ You can inject the script into your results page, for testing. This works best u
 Open the JavaScript console and paste the next line. You will not be able to use the more advanced functions 
 but it should give you an idea of what it can be used for.
 ```js
-    $.getScript('https://raw.githubusercontent.com/mehmetc/jQuery.PRIMO/master/dist/jqprimo/jQuery.PRIMO.js')
+    $.getScript('https://github.com/mehmetc/jQuery.PRIMO/raw/master/dist/jQuery.PRIMO.js')
 ``` 
 Browsers are getting stricter with every release. If you get strange errors just copy the complete source into your console.    
     

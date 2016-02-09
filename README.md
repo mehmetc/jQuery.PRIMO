@@ -14,7 +14,8 @@ See the [releases](https://github.com/mehmetc/jQuery.PRIMO/releases) for downloa
 
 ### WARNING 
 jQuery.PRIMO.js is intended to be used with the **vanilla**(unchanged) view. Our philosophy is **"extend not rewrite"**. 
-So, this might NOT work is you changed//removed/renamed class names, id's etc. 
+So, this might NOT work is you changed/removed/renamed class names, id's etc. 
+
 [Contact me](https://github.com/mehmetc/jQuery.PRIMO/issues/new) if you are experiencing problems. 
 
 Installation  

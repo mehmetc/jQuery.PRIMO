@@ -1,7 +1,15 @@
 <!--
-LoFi solution to notify a user if his/her session is expired.
+LoFi solution to notify a user if his/her session is expired on page load.
+Thanks to Christian Haenger for the idea
 
 consists of a template and some javascript
+takes 2 scenario’s into account.
+you will get a notification if your session is expired
+	1. you are logged in
+	2. your session was idle (not used)
+
+Test it by setting the sessionTimer object on the sessionStorage in your console and refresh the page.
+sessionStorage.setItem('sessionTimer','{"id":"B0G050","time":"2016-02-10T06:00:33.790Z","loggedIn":true}')
 -->
 
 <script type="text/template" id="timeout-tpl">

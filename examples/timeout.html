@@ -1,0 +1,61 @@
+<!--
+LoFi solution to notify a user if his/her session is expired.
+
+consists of a template and some javascript
+-->
+
+<script type="text/template" id="timeout-tpl">
+    <div id="timeoutMessage"
+         style="background-color: {{bgcolor}}; color: {{txtcolor}}; border: 1px solid {{bgcolor}};padding: 10px;text-align: center;">
+        <span>{{message}}</span>
+    </div>
+</script>
+
+<script type="text/javascript">
+    jQuery(document).ready(function () {
+        if (typeof(Storage) !== "undefined") { //check if sessionStorage is supported on this browser
+            var maxIdleTime = 60;
+            var currentSessionID = jQuery.PRIMO.session.sessionId;
+
+            var sessionTimer = JSON.parse(sessionStorage.getItem('sessionTimer')); //get sessionTimer object from sessionStorage
+            if (sessionTimer == null) { //set sessionTimer if not set
+                sessionTimer = {
+                    "id": currentSessionID,
+                    time: new Date(),
+                    loggedIn: jQuery.PRIMO.session.user.isLoggedIn()
+                };
+            }
+
+            if (sessionTimer) {
+                //this is the time since the last refresh
+                var idleTime = Math.floor(((new Date() - new Date(sessionTimer.time)) / 1000) / 60);
+                var timeoutMessage = '';
+
+                if (sessionTimer.id != currentSessionID) { //if you have a session timeout you have a new id
+                    if (sessionTimer.loggedIn) { // if you were logged in
+                        timeoutMessage = "You are logged out because of a session time out.";
+                    } else if (idleTime > maxIdleTime) { // if session time out happened because of time out
+                        timeoutMessage = "Your session has timed out.";
+                    }
+                }
+
+                if (timeoutMessage !== '') {
+                    //render the template and append it to exlidSearchTileWrapper
+                    jQuery('#exlidSearchTileWrapper').after(
+                            jQuery.PRIMO.template.renderById('timeout-tpl', {
+                                message: timeoutMessage,
+                                txtcolor: 'white',
+                                bgcolor: '#494949'
+                            })
+                    );
+                }
+            }
+
+            //update sessionTimer
+            sessionTimer.id = currentSessionID;
+            sessionTimer.time = new Date();
+            sessionTimer.loggedIn = jQuery.PRIMO.session.user.isLoggedIn();
+            sessionStorage.setItem('sessionTimer', JSON.stringify(sessionTimer));
+        }
+    });
+</script>

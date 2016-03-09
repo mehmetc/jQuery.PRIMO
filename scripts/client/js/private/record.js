@@ -87,7 +87,6 @@ var _getPNXData = function (recordID, type) {
         type: 'get',
         dataType: 'xml',
         url: jQuery.PRIMO.parameters.base_path + '/record/' + recordID + '.pnx'
-        //url: jQuery.PRIMO.parameters.base_path + '/helpers/record_helper.jsp?id=' + recordID + '.pnx',
     }).then(function (data, textStatus, xhr) {
         if (xhr.getResponseHeader('Content-Type').search(/xml/) >= 0) {
             switch (type) {

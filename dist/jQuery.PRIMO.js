@@ -111,19 +111,31 @@ function _query(){
     var parsedURL = parseURL();
 
     var facets = [];
-    //Get All FACETS
-    if (parsedURL.lookup('ct')[0] !== undefined){
-        var keys = parsedURL.lookup('fctN');
-        var values = parsedURL.lookup(('fctV'));
 
-        $(keys).each(function(index, element){
-            var result = {};
-            if (index <= values.length) {
-                result[element] = values[index];
-            } else {
-                result[element] = '';
-            }
-            facets.push(result);
+//Get All FACETS
+    if (parsedURL.lookup('ct')[0] !== undefined){
+        var keys = {"inc": [], "exc": []};
+
+        jQuery.merge(keys["inc"], parsedURL.lookup('fctN'));
+        jQuery.merge(keys["inc"], parsedURL.lookup('mulIncFctN'));
+        jQuery.merge(keys["exc"], parsedURL.lookup('mulExcFctN'));
+
+        var values = {"inc": [], "exc": []};
+        jQuery.merge(values['inc'], parsedURL.lookup('fctV'));
+        jQuery.merge(values['inc'], parsedURL.lookup('fctIncV'));
+        jQuery.merge(values['exc'], parsedURL.lookup('fctExcV'));
+
+        jQuery(Object.keys(keys)).each(function(indexKeyType, keyType){
+            jQuery(keys[keyType]).each(function(index, element){
+                var value = '';
+                if (index <= values[keyType].length) {
+                    value = values[keyType][index];
+                } else {
+                    value = '';
+                }
+
+                facets.push({'index': element, 'precision':'exact', 'term': value, 'operator': 'AND', 'exclude': (keyType === 'exc')});
+            });
         });
     }
 
@@ -132,27 +144,28 @@ function _query(){
     //TODO:Handle dlSearch.do
     if (parsedURL.lookup('mode')[0] !== undefined && parsedURL.lookup('mode')[0] === 'Basic'){   // simple search
         $(parsedURL.lookup('freeText')).each(function(i, el){
-            query.push({'index':'any', 'precision':'contains', 'term': el, 'operator': 'AND'});
+            query.push({'index':'any', 'precision':'contains', 'term': el, 'operator': 'AND', 'exclude':false});
         });
     } else {    //advanced search
         $(parsedURL.lookup('freeText')).each(function(i, el){
             query.push({'index': (parsedURL.lookup('UI'+i)[0] || 'any'),
                         'precision': (parsedURL.lookup('StartWith'+i)[0] || 'contains'),
                         'term': (parsedURL.lookup('freeText'+i)[0] || ''),
-                        'operator': (parsedURL.lookup('boolOperator'+i)[0] || 'AND')
+                        'operator': (parsedURL.lookup('boolOperator'+i)[0] || 'AND'),
+                        'exclude':false
                         });
         });
 
         var advancedSearchKeys= {};
-        $('.EXLSearchFieldRibbonFormFieldsGroup2 input:visible,.EXLSearchFieldRibbonFormFieldsGroup2 select:visible').each(function(i,el){
+        jQuery('.EXLSearchFieldRibbonFormFieldsGroup2 input:visible,.EXLSearchFieldRibbonFormFieldsGroup2 select:visible').each(function(i,el){
             var key = $(el).attr('id').replace(/^.*[i|I]nput_/, '').replace(/_$/,'');
             advancedSearchKeys[key] = $(el).attr('name');
         });
 
-        $(Object.keys(advancedSearchKeys)).each(function(i,el){
+        jQuery(Object.keys(advancedSearchKeys)).each(function(i,el){
             var key = el;
             var value = parsedURL.lookup(advancedSearchKeys[key])[0] || '';
-            query.push({'index': key, 'precision':'contains', 'term': decodeURIComponent(value), 'operator': 'AND'});
+            query.push({'index': key, 'precision':'contains', 'term': decodeURIComponent(value), 'operator': 'AND', 'exclude':false});
         })
     }
 
@@ -190,21 +203,18 @@ function _query(){
         }
         else {
             jQuery(query).each(function(i, el) {
-                query[i] = el;
                 if (el.term.trim().length > 0){
                     textQuery += '(' + el.index + ' ' + el.precision + ' ' + el.term + ')';
                     textQuery += ((el.term.length > 0) && (i < query.length-1)) ? ' ' + el.operator.trim() + ' ' : '';
                 }
             });
 
-            jQuery(facets).each(function(i, el) {
-                jQuery(Object.keys(el)).each(function(j, key){
-                    facets[i] = {index:key, term: el[key]};
-                    if (el[key].trim().length > 0) {
-                        textQuery += ((textQuery.length > 0)  && (i < query.length-1)) ? ' ' + el.operator.trim() + ' ' : '';
-                        textQuery += '(' + key + ' exact ' + el[key] + ')';
-                    }
-                });
+            jQuery(facets).each(function(i, el){
+                if (el.term.trim().length > 0){
+                    textQuery += ((textQuery.length > 0) && (i < query.length-1)) ? ' ' + el.operator.trim() + ' ' : '';
+                    textQuery += el.exclude ? ' NOT' : '';
+                    textQuery += '(' + el.index + ' ' + el.precision + ' ' + el.term + ')';
+                }
             });
         }
 
@@ -327,7 +337,6 @@ var _getPNXData = function (recordID, type) {
         type: 'get',
         dataType: 'xml',
         url: jQuery.PRIMO.parameters.base_path + '/record/' + recordID + '.pnx'
-        //url: jQuery.PRIMO.parameters.base_path + '/helpers/record_helper.jsp?id=' + recordID + '.pnx',
     }).then(function (data, textStatus, xhr) {
         if (xhr.getResponseHeader('Content-Type').search(/xml/) >= 0) {
             switch (type) {
@@ -584,49 +593,6 @@ function _search() {
         }
     }
 }
-/**
- * Reads the FrontEndID from the X-PRIMO-FE-ENVIRONMENT header
- * create or add to /exlibris/primo/p4_1/ng/primo/home/system/tomcat/search/webapps/primo_library#libweb/WEB-INF/urlrewrite.xml
- *
- *  <urlrewrite>
- *      <rule>
- *          <from>.*</from>
- *          <set type="response-header" name="X-PRIMO-FE-ENVIRONMENT">sandbox</set>
- *      </rule>
- *  </urlrewrite>
- *
- *  replace 'sandbox' with the name you want to give to your frontend
- * @method _getFrontEndID
- * @return {String} FrontEnd ID
- * @private
- */
-var _getFrontEndID = (function () {
-    var FEID = null;
-
-    return {
-        data: function () {
-            if (!FEID) {
-                FEID = 'unknown';
-                jQuery.ajax(
-                    {
-                        async: false,
-                        type: 'get',
-                        cache: false,
-                        dataType: 'text',
-                        url: jQuery.PRIMO.parameters.base_path + '/helpers/frontend_id',
-                        success: function (data, event, xhr) {
-                            FEID = data.trim();
-                        },
-                        error: function(){
-                            FEID='unknown';
-                        }
-                    });
-            }
-            return FEID;
-        }
-    }
-})();
-
 /**
  * Retrieves user id, name and if user is logged in
  * @method _getUserInfo

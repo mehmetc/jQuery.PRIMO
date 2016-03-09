@@ -1,47 +1,4 @@
 /**
- * Reads the FrontEndID from the X-PRIMO-FE-ENVIRONMENT header
- * create or add to /exlibris/primo/p4_1/ng/primo/home/system/tomcat/search/webapps/primo_library#libweb/WEB-INF/urlrewrite.xml
- *
- *  <urlrewrite>
- *      <rule>
- *          <from>.*</from>
- *          <set type="response-header" name="X-PRIMO-FE-ENVIRONMENT">sandbox</set>
- *      </rule>
- *  </urlrewrite>
- *
- *  replace 'sandbox' with the name you want to give to your frontend
- * @method _getFrontEndID
- * @return {String} FrontEnd ID
- * @private
- */
-var _getFrontEndID = (function () {
-    var FEID = null;
-
-    return {
-        data: function () {
-            if (!FEID) {
-                FEID = 'unknown';
-                jQuery.ajax(
-                    {
-                        async: false,
-                        type: 'get',
-                        cache: false,
-                        dataType: 'text',
-                        url: jQuery.PRIMO.parameters.base_path + '/helpers/frontend_id',
-                        success: function (data, event, xhr) {
-                            FEID = data.trim();
-                        },
-                        error: function(){
-                            FEID='unknown';
-                        }
-                    });
-            }
-            return FEID;
-        }
-    }
-})();
-
-/**
  * Retrieves user id, name and if user is logged in
  * @method _getUserInfo
  * @returns {Object} returns a User object.

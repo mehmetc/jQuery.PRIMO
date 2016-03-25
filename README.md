@@ -57,7 +57,7 @@ I also created 3 screencasts(no audio) as a guide.
 [![Setup jQuery.PRIMO.js](https://i.vimeocdn.com/video/562009192_590x332.jpg)](https://vimeo.com/160106433 "Setup jQuery.PRIMO within the footer")
 
 
-Or if you really want to isolate jQuery.PRIMO.
+Or if you want to isolate jQuery.PRIMO.
  
  
 [![Setup jQuery.PRIMO.js](https://i.vimeocdn.com/video/553619741_590x332.jpg)](https://vimeo.com/153357262 "Setup jQuery.PRIMO")

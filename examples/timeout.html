@@ -34,6 +34,11 @@ sessionStorage.setItem('sessionTimer','{"id":"B0G050","time":"2016-02-10T06:00:3
                 };
             }
 
+            jQuery('#exlidSignOut').on('click', function(e){
+                sessionTimer.loggedIn = false;
+                sessionStorage.setItem('sessionTimer', JSON.stringify(sessionTimer));
+            });
+
             if (sessionTimer) {
                 //this is the time since the last refresh
                 var idleTime = Math.floor(((new Date() - new Date(sessionTimer.time)) / 1000) / 60);

@@ -21,8 +21,27 @@ function _facet() {
     try {
         jQuery.each(jQuery('#facetList .EXLFacetContainer'), function (i, container) {
             container = $(container);
-            container.name = $(container).find('*[class*="EXLFacetTitleLabelPHolder"]').attr('class').replace('EXLFacetTitleLabelPHolder', '');
-            container.title = $(container).find('*[class*="EXLFacetTitleLabelPHolder"]').text().trim();
+
+            var containerLabel = $(container).find('*[class*="EXLFacetTitleLabelPHolder"]');
+
+            if (containerLabel.length > 0) {
+                container.name = $(container).find('*[class*="EXLFacetTitleLabelPHolder"]').attr('class').replace('EXLFacetTitleLabelPHolder', '');
+                container.title = $(container).find('*[class*="EXLFacetTitleLabelPHolder"]').text().trim();
+            } else {
+                try {
+                    var facetName = container.find('.EXLFacet a').attr('href').match(/fctN=(.*?)\&/);
+                    if (facetName.length > 1) {
+                        container.name = facetName[1];
+                    } else {
+                        container.name = '';
+                    }
+                    container.title = container.find('h4').text().trim() || '';
+                } catch(e) {
+                    container.name = '';
+                    container.title = '';
+                }
+            }
+
             container.index = i;
             container.values = [];
             $.each(container.find('.EXLFacet'), function (j, facet) {
@@ -59,10 +78,10 @@ function _facet() {
         facets.getByName = function (name) {
             return facets.filter(function (facet, i) {
                 return facet.name === name;
-            })[0];
+            })[0]; //TODO: should it only return the first match or all?
         };
     } catch(error) {
-        console.log('unable to load facets');
+        console.log('unable to load facets', error);
     }
 
     return facets;
@@ -1261,7 +1280,7 @@ jQuery.extend(jQuery.PRIMO, {
     }()),
     search: _search(),
     session: _getSessionData(),
-    version: "1.0.2",
+    version: "1.1.4",
     reload: function () {
         jQuery.PRIMO.session.reload();
     },

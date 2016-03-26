@@ -50,9 +50,16 @@ after every Primo upgrade.
 
 That is it.
 
-I also created 2 screencasts(no audio) as a guide.
+I also created 3 screencasts(no audio) as a guide.
 
-[![Installing jQuery.PRIMO](https://i.vimeocdn.com/video/553515621_590x332.jpg)](https://vimeo.com/153275621 "Installing jQuery.PRIMO v1.0.0 ")
+[![Installing jQuery.PRIMO](https://i.vimeocdn.com/video/553515621_590x332.jpg)](https://vimeo.com/153275621 "Installing jQuery.PRIMO v1.0.0")
+
+[![Setup jQuery.PRIMO.js](https://i.vimeocdn.com/video/562009192_590x332.jpg)](https://vimeo.com/160106433 "Setup jQuery.PRIMO within the footer")
+
+
+Or if you want to isolate jQuery.PRIMO.
+ 
+ 
 [![Setup jQuery.PRIMO.js](https://i.vimeocdn.com/video/553619741_590x332.jpg)](https://vimeo.com/153357262 "Setup jQuery.PRIMO")
 
 

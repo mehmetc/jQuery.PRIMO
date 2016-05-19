@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!--
+      Idea and original implementation by Sacha Jerabek(jerabek.alexander_j at uqam.ca)
+
+      This will display 3 columns
+        - PNX record
+        - Original record (this is probably a MarcXML record)
+        - A formated MarcXML display
+
+      If you want to be able to retrieve the Original Record(MarcXML) then you need to uncomment or add
+
+            <mapping resource="com/exlibris/primo/domain/entities/OriginalSourceRecord.hbm.xml"/>
+
+      to the hibernate mapping file /exlibris/primo/p4_1/ng/primo/home/system/search/conf/hibernate.cfg.xml
+      The hibernate mapping file will be overwritten after each update this means you need to reapply this patch after every Primo upgrade.
+      If you are hosted ask Ex Libris to enable it.
+
+
+
+
+      To use this you need to upload this file using the file uploader on the backend.
+      TEMPLATE URL :
+          http://YOUR.PRIMO.DOMAIN/primo_library/libweb/uploaded_files/YOUR.VIEW/libriansWB.html#YOUR.RECORD.ID
+      EXAMPLE URL :
+          http://limo.q.libis.be/primo_library/libweb/uploaded_files/IMAGES/librariansWB.html#32LIBIS_ALMA_DS71138579270001471
+    -->
+    <meta charset="UTF-8">
+    <title>Librarians Workbench</title>
+    <script type='text/javascript' src='/primo_library/libweb/javascript/jquery/jquery-1.8.3.min.js'></script>
+    <script type='text/javascript' src='/primo_library/libweb/javascript/jQuery.PRIMO.min.js'></script>
+
+    <style type="text/css">
+        body {
+            font-family: "Consolas", Courier, monospace;
+            padding: 0;
+            margin: 0;
+        }
+
+        tbody {
+            display: block;
+            margin: 2em;
+            position: absolute;
+            top: 120px;
+            right: 0;
+            width: 30%;
+            height: 650px;
+            overflow: auto;
+            border: 1px solid #ccc;
+        }
+
+        th {
+            padding: .4em;
+            border: 1px solid #ddd;
+            background: #eee;
+        }
+
+        td {
+            white-space: pre-wrap;
+            padding: .4em;
+            border: 1px solid #ddd;
+        }
+
+        strong {
+            padding: 0 .4em 0 0;
+            font-weight: normal;
+        }
+
+        iframe.pnxdata {
+            margin: 2em;
+            position: absolute;
+            top: 120px;
+            left: 0;
+            width: 32%;
+            height: 650px;
+        }
+
+        iframe.alephxmldata {
+            margin: 2em;
+            position: absolute;
+            top: 120px;
+            left: 33%;
+            width: 32%;
+            height: 650px;
+        }
+
+        h1 {
+            text-align: center;
+            padding: .2em;
+            background: #eee;
+            margin: 0;
+        }
+
+        h2 {
+            text-align: center;
+            padding: .4em;
+            background: #eee;
+            margin: 0;
+            border-bottom: 1px solid #ccc;
+        }
+    </style>
+
+    <!-- Template used to display the workbench -->
+    <script type="text/template" id="libWB-tpl">
+        <div>
+            <h1>Record : {{ recordId }}</h1>
+            <h2>PNX | XML | MARC</h2>
+
+            <div>
+                <iframe class="pnxdata" src='/primo_library/libweb/jqp/record/{{ recordId }}.pnx'></iframe>
+                <iframe class="alephxmldata" src='/primo_library/libweb/jqp/record/{{ recordId }}.xml'></iframe>
+                <div id='data'></div>
+            </div>
+        </div>
+    </script>
+
+    <!-- Template to display error remote record  -->
+    <script type="text/template" id="remoteRecord-tpl">
+        <table>
+            <tbody>
+                <tr>
+                    <td>
+                        <h1>Remote Record</h1>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </script>
+
+    <script type="text/template" id="noRecordID-tpl">
+        <div>
+            <h1>Please supply a record id</h1>
+        </div>
+    </script>
+
+    <!-- XSLT to transform a MarcXML record into HTML -->
+    <script type="text/xsl" id="pretty_marc">
+        <xsl:stylesheet version="1.0" xmlns:marc="http://www.loc.gov/MARC21/slim" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+            <xsl:output method="html" />
+            <xsl:template match="node()|@*">
+                <xsl:apply-templates select="node()|@*" />
+            </xsl:template>
+            <xsl:template match="marc:record">
+                <table>
+                    <tr>
+                        <th nowrap="true" align="right" valign="top">
+                            000
+                        </th>
+                        <td colspan="2">
+                            <xsl:value-of select="marc:leader" />
+                        </td>
+                    </tr>
+                    <xsl:apply-templates select="marc:datafield|marc:controlfield" />
+                </table>
+            </xsl:template>
+            <xsl:template match="marc:controlfield">
+                <tr>
+                    <th nowrap="true" align="right" valign="top">
+                        <xsl:value-of select="@tag" />
+                    </th>
+                    <td class="controlfield" colspan="2">
+                        <xsl:value-of select="." />
+                    </td>
+                </tr>
+            </xsl:template>
+            <xsl:template match="marc:datafield">
+                <tr>
+                    <th nowrap="true" align="right" valign="top">
+                        <xsl:value-of select="@tag" />
+                    </th>
+                    <td>
+                        <xsl:value-of select="@ind1" />
+                        <xsl:value-of select="@ind2" />
+                    </td>
+                    <td>
+                        <xsl:apply-templates select="marc:subfield" />
+                    </td>
+                </tr>
+            </xsl:template>
+            <xsl:template match="marc:subfield">
+                <strong>|<xsl:value-of select="@code"/></strong>
+                <xsl:value-of select="." />
+            </xsl:template>
+        </xsl:stylesheet>
+    </script>
+
+</head>
+
+<body>
+    <!-- placeholder for MarcXML file before transformation -->
+    <script type="application/xml" id='xml'></script>
+    <!-- placeholder for HTML after MarcXML XSLT transformation -->
+
+    <script type="application/javascript">
+        // get record id from URL
+        var recordId = window.location.hash.substr(1);
+
+        function convertMarcXML2HTML() {
+            var xml = jQuery.parseXML($("#xml").html()); //parse xml document
+            var xslMarc = jQuery.parseXML($('#pretty_marc').html()); //parse xslt document
+            var xsltProcessor = new XSLTProcessor();
+            xsltProcessor.importStylesheet(xslMarc);
+            var marc = xsltProcessor.transformToFragment(xml, document); //transform ILS record
+
+            return marc;
+        }
+
+        if (recordId && recordId.length > 0) {
+            //LOAD ILS data into #xml script tag
+            $('#xml').load('/primo_library/libweb/jqp/record/' + recordId + '.xml', function() {
+                //Apply template
+                $('body').append(jQuery.PRIMO.template.renderById("libWB-tpl", {
+                    recordId: recordId
+                }));
+
+                //add MarcXML as HTML to data placeholder in libWB-tpl
+                if (recordId.toLowerCase().startsWith('tn_')) { //error if it is a PC record
+                    $('#data').append(jQuery.PRIMO.template.renderById("remoteRecord-tpl", {}));
+                } else {
+                    $('#data').append(convertMarcXML2HTML());
+                }
+            });
+        } else {
+            $('body').append(jQuery.PRIMO.template.renderById("noRecordID-tpl", {})); // error if no record id
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!--
+      Idea and original implementation by Sacha Jerabek(jerabek.alexander_j at uqam.ca)
+
+      The main program flow is:
+        If we have a record id
+         1) get record as JSON
+         2) get record as XML
+         3) render template libWB-tpl
+         4) render ILS record in a table
+
+
+      This will display 3 columns
+        - PNX record
+        - Original record (this is probably a MarcXML record)
+        - A formated MarcXML display
+
+      If you want to be able to retrieve the Original Record(MarcXML) then you need to uncomment or add
+
+            <mapping resource="com/exlibris/primo/domain/entities/OriginalSourceRecord.hbm.xml"/>
+
+      to the hibernate mapping file /exlibris/primo/p4_1/ng/primo/home/system/search/conf/hibernate.cfg.xml
+      The hibernate mapping file will be overwritten after each update this means you need to reapply this patch after every Primo upgrade.
+      If you are hosted ask Ex Libris to enable it.
+
+
+      contributors: Jerabek, Alexander J. <jerabek.alexander_j at uqam.ca>
+                    Jeff Peterson <gpeterso at umn.edu>
+                    Ulrich Leodolter <ulrich.leodolter at obvsg.at>
+                    Andy MacKinnon <andy.mackinnon at bodleian.ox.ac.uk>
+                    Mehmet Celik <mehmet.celik at libis.kuleuven.be>
+
+      To use this you need to upload this file using the file uploader on the backend.
+      TEMPLATE URL :
+          http://YOUR.PRIMO.DOMAIN/primo_library/libweb/uploaded_files/YOUR.VIEW/libriansWB.html#YOUR.RECORD.ID
+      EXAMPLE URL :
+          http://limo.q.libis.be/primo_library/libweb/uploaded_files/IMAGES/librariansWB.html#32LIBIS_ALMA_DS71138579270001471
+
+    -->
+    <meta charset="UTF-8">
+    <title>Librarians Workbench</title>
+    <script type='text/javascript' src='/primo_library/libweb/javascript/jquery/jquery-1.8.3.min.js'></script>
+    <script type='text/javascript' src='/primo_library/libweb/javascript/jQuery.PRIMO.min.js'></script>
+
+    <style type="text/css">
+        body {
+            font-family: "Consolas", Courier, monospace;
+            padding: 0;
+            margin: 0;
+        }
+
+        tbody {
+            display: block;
+            margin: 2em;
+            position: absolute;
+            top: 120px;
+            right: 0;
+            width: 30%;
+            height: 650px;
+            overflow: auto;
+            border: 1px solid #ccc;
+        }
+
+        th {
+            padding: .4em;
+            border: 1px solid #ddd;
+            background: #eee;
+        }
+
+        td {
+            white-space: pre-wrap;
+            padding: .4em;
+            border: 1px solid #ddd;
+        }
+
+        strong {
+            padding: 0 .4em 0 0;
+            font-weight: normal;
+        }
+
+        iframe.pnxdata {
+            margin: 2em;
+            position: absolute;
+            top: 120px;
+            left: 0;
+            width: 32%;
+            height: 650px;
+        }
+
+        iframe.xmldata {
+            margin: 2em;
+            position: absolute;
+            top: 120px;
+            left: 33%;
+            width: 32%;
+            height: 650px;
+        }
+
+        h1 {
+            text-align: center;
+            padding: .2em;
+            background: #eee;
+            margin: 0;
+        }
+
+        h2 {
+            text-align: center;
+            padding: .4em;
+            background: #eee;
+            margin: 0;
+            border-bottom: 1px solid #ccc;
+        }
+
+        #ilsdata {
+            display: none;
+        }
+    </style>
+
+    <!-- Template used to display the workbench -->
+    <script type="text/template" id="libWB-tpl">
+        <div>
+            <h1>Record : {{ recordId }}</h1>
+            <h2>PNX | Source XML | {{ sourceformat }}</h2>
+
+            <div>
+                <iframe class="pnxdata" src='/primo_library/libweb/jqp/record/{{ recordId }}.pnx'></iframe>
+                <iframe class="xmldata" src='/primo_library/libweb/jqp/record/{{ recordId }}.xml'></iframe>
+                <iframe id="ilsdata" src='{{ ilsurl }}'></iframe>
+                <div id='data'></div>
+            </div>
+        </div>
+    </script>
+
+    <!-- Template to display error remote record  -->
+    <script type="text/template" id="remoteRecord-tpl">
+        <table>
+            <tbody>
+            <tr>
+                <td>
+                    <h1>Remote Record</h1>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </script>
+
+    <script type="text/template" id="noRecordID-tpl">
+        <div>
+            <h1>Please supply a record id</h1>
+        </div>
+    </script>
+
+    <!-- XSLT to transform a MarcXML record into HTML -->
+    <script type="text/xsl" id="pretty_marc">
+        <xsl:stylesheet version="1.0" xmlns:marc="http://www.loc.gov/MARC21/slim" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+            <xsl:output method="html" />
+            <xsl:template match="node()|@*">
+                <xsl:apply-templates select="node()|@*" />
+            </xsl:template>
+            <xsl:template match="marc:record">
+                <table>
+                    <tr>
+                        <th nowrap="true" align="right" valign="top">
+                            000
+                        </th>
+                        <td colspan="2">
+                            <xsl:value-of select="marc:leader" />
+                        </td>
+                    </tr>
+                    <xsl:apply-templates select="marc:datafield|marc:controlfield" />
+                </table>
+            </xsl:template>
+            <xsl:template match="marc:controlfield">
+                <tr>
+                    <th nowrap="true" align="right" valign="top">
+                        <xsl:value-of select="@tag" />
+                    </th>
+                    <td class="controlfield" colspan="2">
+                        <xsl:value-of select="." />
+                    </td>
+                </tr>
+            </xsl:template>
+            <xsl:template match="marc:datafield">
+                <tr>
+                    <th nowrap="true" align="right" valign="top">
+                        <xsl:value-of select="@tag" />
+                    </th>
+                    <td>
+                        <xsl:value-of select="@ind1" />
+                        <xsl:value-of select="@ind2" />
+                    </td>
+                    <td>
+                        <xsl:apply-templates select="marc:subfield" />
+                    </td>
+                </tr>
+            </xsl:template>
+            <xsl:template match="marc:subfield">
+                <strong>|<xsl:value-of select="@code"/></strong>
+                <xsl:value-of select="." />
+            </xsl:template>
+        </xsl:stylesheet>
+
+    </script>
+
+    <!-- XSLT to transform a MABXML record into HTML -->
+    <script type="text/xsl" id="pretty_mab">
+        <xsl:stylesheet version="1.0" xmlns:mab="http://www.ddb.de/professionell/mabxml/mabxml-1.xsd" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+            <xsl:output method="html" />
+            <xsl:template match="node()|@*">
+                <xsl:apply-templates select="node()|@*" />
+            </xsl:template>
+            <xsl:template match="mab:record">
+                <table>
+                    <tr>
+                        <th nowrap="true" align="right" valign="top">
+                            000
+                        </th>
+                        <td colspan="2">
+                            <xsl:value-of select="mab:leader" />
+                        </td>
+                    </tr>
+                    <xsl:apply-templates select="mab:datafield|mab:controlfield" />
+                </table>
+            </xsl:template>
+            <xsl:template match="mab:controlfield">
+                <tr>
+                    <th nowrap="true" align="right" valign="top">
+                        <xsl:value-of select="@tag" />
+                    </th>
+                    <td class="controlfield" colspan="2">
+                        <xsl:value-of select="." />
+                    </td>
+                </tr>
+            </xsl:template>
+            <xsl:template match="mab:datafield">
+                <tr>
+                    <th nowrap="true" align="right" valign="top">
+                        <xsl:value-of select="@tag" />
+                    </th>
+                    <td>
+                        <xsl:value-of select="@ind1" />
+                        <xsl:value-of select="@ind2" />
+                    </td>
+                    <td>
+                        <xsl:apply-templates select="mab:subfield" />
+                    </td>
+                </tr>
+            </xsl:template>
+            <xsl:template match="mab:subfield">
+                <strong>|<xsl:value-of select="@code"/></strong>
+                <xsl:value-of select="." />
+            </xsl:template>
+        </xsl:stylesheet>
+
+    </script>
+
+</head>
+
+<body>
+<!-- placeholder for MarcXML file before transformation -->
+<script type="application/xml" id='xml'></script>
+
+<script type="application/javascript">
+    // setup ajax defaults
+    $.ajaxSetup({
+        header: {'Accept-Encoding:': 'gzip,deflate'}
+    });
+
+
+    function xmlToString(xmlData) {
+        var xmlString;
+        //IE
+        if (window.ActiveXObject) {
+            xmlString = xmlData.xml;
+        }
+        // code for Mozilla, Firefox, Opera, etc.
+        else {
+            xmlString = (new XMLSerializer()).serializeToString(xmlData);
+        }
+        return xmlString;
+    }
+
+
+    function getDataFromIFrame(iFrameId) {
+        var iframe = $(iFrameId)[0];
+        return iframe.contentWindow ? iframe.contentWindow.document : iframe.contentDocument.defaultView;
+        //return $(iFrameId).contents()[0];
+    }
+
+    // get record id from URL
+    function getRecordId() {
+        return window.location.hash.substr(1);
+    }
+
+    // transforms an XML document using an XSLT and returns the result
+    function convertXML2HTML(xmlId, xsltId) {
+        //fix namespaceless XML
+        $(xmlId).html(function (index, html) {
+            return html.replace('<record>', '<record xmlns="http://www.loc.gov/MARC21/slim">');
+        });
+
+        var xml = jQuery.parseXML($(xmlId).html()); //parse xml document
+        var xslMarc = jQuery.parseXML($(xsltId).html()); //parse xslt document
+        var xsltProcessor = new XSLTProcessor();
+        xsltProcessor.importStylesheet(xslMarc);
+        return xsltProcessor.transformToFragment(xml, document); //transform ILS record
+    }
+
+    //Render template
+    function renderLibrariansWorkbench(record) {
+        jQuery.PRIMO.template.renderById("libWB-tpl", {
+            recordId: getRecordId(),
+            sourceformat: record.control.sourceformat,
+            ilsurl: ''
+        }, true).then(function (html) {
+            $('body').append(html);
+
+            //when iframe is loaded get the XML
+            $('.xmldata').on('load', function(){
+                loadXMLDataFromIFrame('.xmldata').then(function(data){
+                    $("#xml").html(data);
+                    transformIlsRecordIntoTable(record, '#xml', '#data');
+                });
+
+            });
+        });
+    }
+
+    function loadXMLDataFromIFrame(iFrameId){
+        var d = $.Deferred();
+        try {
+            d.resolve(xmlToString(getDataFromIFrame(iFrameId)));
+        } catch(e){
+            d.reject(function(){console.log("Error rendering template: " + id, e); return "";});
+        }
+
+        return d.promise();
+    }
+
+
+    //Check if the record ID is a TN(Third Node) record
+    function isPCRecord() {
+        return getRecordId().toLowerCase().startsWith('tn_');
+    }
+
+    function transformIlsRecordIntoTable(record, ilsRecordELId, resultELId) {
+        //add MarcXML as HTML to data placeholder in libWB-tpl
+        if (isPCRecord()) { //error if it is a PC record
+            $(resultELId).append(jQuery.PRIMO.template.renderById("remoteRecord-tpl", {}));
+        } else {
+            switch (record.control.sourceformat.toLowerCase()) {
+                case 'marc21':
+                case 'aleph':
+                    $(resultELId).append(convertXML2HTML(ilsRecordELId, '#pretty_marc'));
+                    break;
+                case 'mab':
+                    $(resultELId).append(convertXML2HTML(ilsRecordELId, '#pretty_mab'));
+                    break;
+            }
+
+        }
+    }
+
+    function getRecordFromILS() {
+
+    }
+
+//MAIN
+    var recordId = getRecordId();
+    if (recordId && recordId.length > 0) {
+        //GET record as an object
+        $.getJSON('/primo_library/libweb/jqp/record/' + recordId + '.json', function (record) {
+            renderLibrariansWorkbench(record);
+        });
+    } else {
+        $('body').append(jQuery.PRIMO.template.renderById("noRecordID-tpl", {})); // error if no record id
+    }
+</script>
+</body>
+
+</html>

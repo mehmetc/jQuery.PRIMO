@@ -239,7 +239,7 @@ This means they will _only_ return sain values after the page is completely load
 
 #### Get timing for Network latency
 ```js
-    jQuery.session.performance.timing.getNetworkLatency();
+    jQuery.PRIMO.session.performance.timing.getNetworkLatency();
 ```
 
 #### Get timing for Page Load
@@ -525,27 +525,54 @@ Extends the **DOM**.
 ```    
     
 ##**SEARCH**<a name="search"></a>  
-#### Search for water 
-*This wraps the default [XServices API](https://developers.exlibrisgroup.com/primo/apis/webservices/xservices/search/briefsearch) this means that 'WS and XS IP' restrictions apply*
-**TODO: move to server** 
+*Wraps the default [XServices API](https://developers.exlibrisgroup.com/primo/apis/webservices/xservices/search/briefsearch) this means that 'WS and XS IP' restrictions apply*
+*Wraps the default [REST API](https://developers.exlibrisgroup.com/primo/apis/webservices/rest/pnxs)*
+
+    The results returned by the different API's are not compatible(feel free to fork and change) you can not switch between them without rewriting your code that consumes the search result.  
 
 ###### function byQuery(query, options)
 
-*query*: can be a string or an array 
-*options*: can be one of
-    - institution: your institution code defaults = view institution code
-    - index: index to start returning from defaults = 1
-    - bulkSize: amount of records to return. default = 10
+ *query*: can be a string or an array 
+ *options*: can be one of
+- institution: your institution code defaults = view institution code
+- index: index to start returning from defaults = 1
+- bulkSize: amount of records to return. default = 10
+    
+ extra options for use with __REST__ api
+- restAPI: true|false - use REST API default = false
+- apiKey: only needed when hosted by ExLibris default = null
+- regionURL: the API service URL that is enabled for your API key default = https://api-eu.hosted.exlibrisgroup.com 
 
-### search for water
+```text    
+    regionURL is one of:
+        * America   https://api-na.hosted.exlibrisgroup.com
+        * EU        https://api-eu.hosted.exlibrisgroup.com
+        * APAC      https://api-ap.hosted.exlibrisgroup.com    
+```    
+    
+
+### search for water (XServices)
 ```js
     var result = jQuery.PRIMO.search.byQuery('any,contains,water');
 ```    
 
-### search for water in title and pollution in subject return 100 records starting from position 10 on the result set.
+### search for water in title and pollution in subject return 100 records starting from position 10 on the result set. (XServices)
 ```js
     var result = jQuery.PRIMO.search.byQuery(['title,contains,water', 'subject,contains,pollution'], {"index":10, "bulkSize":100});
 ```    
+
+
+### search for water and return 5 records when locally hosted (REST)
+```js
+    var result = jQuery.PRIMO.search.byQuery('any,contains,water', {"restAPI":true, "bulkSize":5});
+```    
+
+
+### search for water when hosted by ExLibris [Developers Network](https://developers.exlibrisgroup.com/primo/apis/webservices/rest) (REST)
+```js    
+    var result = jQuery.PRIMO.search.byQuery("any,contains,water", {"restAPI":true,"apiKey":"1234567890", "regionURL": "https://api-na.hosted.exlibrisgroup.com"})
+```    
+
 
 ##**QUERY**<a name="query"></a>
 Parses the URL and scrapes the **DOM** for data.

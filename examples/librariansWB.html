@@ -5,6 +5,14 @@
     <!--
       Idea and original implementation by Sacha Jerabek(jerabek.alexander_j at uqam.ca)
 
+      The main program flow is:
+        If we have a record id
+         1) get record as JSON
+         2) get record as XML
+         3) render template libWB-tpl
+         4) render ILS record in a table
+
+
       This will display 3 columns
         - PNX record
         - Original record (this is probably a MarcXML record)
@@ -20,9 +28,10 @@
 
 
       contributors: Jerabek, Alexander J. <jerabek.alexander_j at uqam.ca>
+                    Jeff Peterson <gpeterso at umn.edu>
                     Ulrich Leodolter <ulrich.leodolter at obvsg.at>
+                    Andy MacKinnon <andy.mackinnon at bodleian.ox.ac.uk>
                     Mehmet Celik <mehmet.celik at libis.kuleuven.be>
-
 
       To use this you need to upload this file using the file uploader on the backend.
       TEMPLATE URL :
@@ -30,15 +39,6 @@
       EXAMPLE URL :
           http://limo.q.libis.be/primo_library/libweb/uploaded_files/IMAGES/librariansWB.html#32LIBIS_ALMA_DS71138579270001471
 
-
-http://dakar.bib.uqam.ca/X?op=publish_avail&library=UQM01&doc_num=000974109
-var alephXmlData = $('.alephxmldata')[0];
-var remoteXML = alephXmlData.contentWindow?: alephXmlData.contentWindow ? alephXmlData.contentDocument.defaultView;
-var xslMarc = jQuery.parseXML($('#pretty_marc').html()); //parse xslt document
-var xsltProcessor = new XSLTProcessor();
-xsltProcessor.importStylesheet(xslMarc);
-var marc = xsltProcessor.transformToFragment(remoteXML, document); //transform ILS record
-$('#data').append(marc);
     -->
     <meta charset="UTF-8">
     <title>Librarians Workbench</title>
@@ -113,8 +113,9 @@ $('#data').append(marc);
             margin: 0;
             border-bottom: 1px solid #ccc;
         }
+
         #ilsdata {
-            display:none;
+            display: none;
         }
     </style>
 
@@ -122,7 +123,7 @@ $('#data').append(marc);
     <script type="text/template" id="libWB-tpl">
         <div>
             <h1>Record : {{ recordId }}</h1>
-            <h2>PNX | Source XML | MARC</h2>
+            <h2>PNX | Source XML | {{ sourceformat }}</h2>
 
             <div>
                 <iframe class="pnxdata" src='/primo_library/libweb/jqp/record/{{ recordId }}.pnx'></iframe>
@@ -137,11 +138,11 @@ $('#data').append(marc);
     <script type="text/template" id="remoteRecord-tpl">
         <table>
             <tbody>
-                <tr>
-                    <td>
-                        <h1>Remote Record</h1>
-                    </td>
-                </tr>
+            <tr>
+                <td>
+                    <h1>Remote Record</h1>
+                </td>
+            </tr>
             </tbody>
         </table>
     </script>
@@ -201,6 +202,7 @@ $('#data').append(marc);
                 <xsl:value-of select="." />
             </xsl:template>
         </xsl:stylesheet>
+
     </script>
 
     <!-- XSLT to transform a MABXML record into HTML -->
@@ -252,73 +254,131 @@ $('#data').append(marc);
                 <xsl:value-of select="." />
             </xsl:template>
         </xsl:stylesheet>
+
     </script>
 
 </head>
 
 <body>
-    <!-- placeholder for MarcXML file before transformation -->
-    <script type="application/xml" id='xml'></script>
+<!-- placeholder for MarcXML file before transformation -->
+<script type="application/xml" id='xml'></script>
 
-    <script type="application/javascript">
-        // get record id from URL
-        var recordId = window.location.hash.substr(1);
+<script type="application/javascript">
+    // setup ajax defaults
+    $.ajaxSetup({
+        header: {'Accept-Encoding:': 'gzip,deflate'}
+    });
 
-        // setup ajax defaults
-        $.ajaxSetup({
-            header: { 'Accept-Encoding:': 'gzip,deflate' }
+
+    function xmlToString(xmlData) {
+        var xmlString;
+        //IE
+        if (window.ActiveXObject) {
+            xmlString = xmlData.xml;
+        }
+        // code for Mozilla, Firefox, Opera, etc.
+        else {
+            xmlString = (new XMLSerializer()).serializeToString(xmlData);
+        }
+        return xmlString;
+    }
+
+
+    function getDataFromIFrame(iFrameId) {
+        var iframe = $(iFrameId)[0];
+        return iframe.contentWindow ? iframe.contentWindow.document : iframe.contentDocument.defaultView;
+        //return $(iFrameId).contents()[0];
+    }
+
+    // get record id from URL
+    function getRecordId() {
+        return window.location.hash.substr(1);
+    }
+
+    // transforms an XML document using an XSLT and returns the result
+    function convertXML2HTML(xmlId, xsltId) {
+        //fix namespaceless XML
+        $(xmlId).html(function (index, html) {
+            return html.replace('<record>', '<record xmlns="http://www.loc.gov/MARC21/slim">');
         });
 
+        var xml = jQuery.parseXML($(xmlId).html()); //parse xml document
+        var xslMarc = jQuery.parseXML($(xsltId).html()); //parse xslt document
+        var xsltProcessor = new XSLTProcessor();
+        xsltProcessor.importStylesheet(xslMarc);
+        return xsltProcessor.transformToFragment(xml, document); //transform ILS record
+    }
 
-        function convertXML2HTML(xmlId, xsltId) {
-            var xml = jQuery.parseXML($(xmlId).html()); //parse xml document
-            var xslMarc = jQuery.parseXML($(xsltId).html()); //parse xslt document
-            var xsltProcessor = new XSLTProcessor();
-            xsltProcessor.importStylesheet(xslMarc);
-            var marc = xsltProcessor.transformToFragment(xml, document); //transform ILS record
+    //Render template
+    function renderLibrariansWorkbench(record) {
+        jQuery.PRIMO.template.renderById("libWB-tpl", {
+            recordId: getRecordId(),
+            sourceformat: record.control.sourceformat,
+            ilsurl: ''
+        }, true).then(function (html) {
+            $('body').append(html);
 
-            return marc;
-        }
-
-        //If we have a record id
-        // 1) get record as JSON
-        // 2) get record as XML
-        // 3) render template libWB-tpl
-        // 4) render ILS record in a table
-        if (recordId && recordId.length > 0) {
-            //GET record as an object
-            $.getJSON('/primo_library/libweb/jqp/record/' + recordId + '.json', function(record) {
-                //LOAD SOURCE XML data into #xml script tag. Must be enabled see https://github.com/mehmetc/jQuery.PRIMO#install-and-setup
-                $('#xml').load('/primo_library/libweb/jqp/record/' + recordId + '.xml', function() {
-                    var ilsRecordId = record.control.sourcerecordid; // get ILS record id
-
-                    //Render template
-                    $('body').append(jQuery.PRIMO.template.renderById("libWB-tpl", {
-                        recordId: recordId,
-                        ilsurl: ''
-                    }));
-
-                    //add MarcXML as HTML to data placeholder in libWB-tpl
-                    if (recordId.toLowerCase().startsWith('tn_')) { //error if it is a PC record
-                        $('#data').append(jQuery.PRIMO.template.renderById("remoteRecord-tpl", {}));
-                    } else {
-                        switch (record.control.sourceformat.toLowerCase()) {
-                            case 'marc21':
-                            case 'aleph':
-                                $('#data').append(convertXML2HTML("#xml", '#pretty_marc'));
-                                break;
-                            case 'mab':
-                                $('#data').append(convertXML2HTML("#xml", '#pretty_mab'));
-                                break;
-                        }
-
-                    }
+            //when iframe is loaded get the XML
+            $('.xmldata').on('load', function(){
+                loadXMLDataFromIFrame('.xmldata').then(function(data){
+                    $("#xml").html(data);
+                    transformIlsRecordIntoTable(record, '#xml', '#data');
                 });
+
             });
-        } else {
-            $('body').append(jQuery.PRIMO.template.renderById("noRecordID-tpl", {})); // error if no record id
+        });
+    }
+
+    function loadXMLDataFromIFrame(iFrameId){
+        var d = $.Deferred();
+        try {
+            d.resolve(xmlToString(getDataFromIFrame(iFrameId)));
+        } catch(e){
+            d.reject(function(){console.log("Error rendering template: " + id, e); return "";});
         }
-    </script>
+
+        return d.promise();
+    }
+
+
+    //Check if the record ID is a TN(Third Node) record
+    function isPCRecord() {
+        return getRecordId().toLowerCase().startsWith('tn_');
+    }
+
+    function transformIlsRecordIntoTable(record, ilsRecordELId, resultELId) {
+        //add MarcXML as HTML to data placeholder in libWB-tpl
+        if (isPCRecord()) { //error if it is a PC record
+            $(resultELId).append(jQuery.PRIMO.template.renderById("remoteRecord-tpl", {}));
+        } else {
+            switch (record.control.sourceformat.toLowerCase()) {
+                case 'marc21':
+                case 'aleph':
+                    $(resultELId).append(convertXML2HTML(ilsRecordELId, '#pretty_marc'));
+                    break;
+                case 'mab':
+                    $(resultELId).append(convertXML2HTML(ilsRecordELId, '#pretty_mab'));
+                    break;
+            }
+
+        }
+    }
+
+    function getRecordFromILS() {
+
+    }
+
+//MAIN
+    var recordId = getRecordId();
+    if (recordId && recordId.length > 0) {
+        //GET record as an object
+        $.getJSON('/primo_library/libweb/jqp/record/' + recordId + '.json', function (record) {
+            renderLibrariansWorkbench(record);
+        });
+    } else {
+        $('body').append(jQuery.PRIMO.template.renderById("noRecordID-tpl", {})); // error if no record id
+    }
+</script>
 </body>
 
 </html>

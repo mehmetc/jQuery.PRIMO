@@ -64,7 +64,7 @@ function _search() {
                 }
 
                 if (restAPI) {
-                    var restURL = 'q=' + query.join(';') + '&inst=' + institution + '&offset=' + index + '&limit' + bulkSize;
+                    var restURL = 'q=' + query.join(';') + '&inst=' + institution + '&offset=' + index + '&limit=' + bulkSize;
                     if (apiKey) {
                         restURL = regionURL + '/primo/v1/pnxs?' + restURL + '&apikey=' + apiKey;
                     }else{
@@ -76,7 +76,10 @@ function _search() {
                             cache: false,
                             type: 'get',
                             dataType: 'json',
-                            url: restURL
+                            url: restURL,
+                            beforeSend: function(jqXHR, s){
+                                // removes auto injected header by ExL, prevents CORS error
+                            }
                         })
                         .done(function (data, event, xhr) {
                             if (typeof data == "string"){
@@ -84,7 +87,6 @@ function _search() {
                             } else {
                                 result = data;
                             }
-
                         })
                         .fail(function (data, event, xhr) {
                             console.log('error searching', e.message)

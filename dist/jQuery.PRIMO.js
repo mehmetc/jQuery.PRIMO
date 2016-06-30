@@ -590,7 +590,7 @@ function _search() {
                 }
 
                 if (restAPI) {
-                    var restURL = 'q=' + query.join(';') + '&inst=' + institution + '&offset=' + index + '&limit' + bulkSize;
+                    var restURL = 'q=' + query.join(';') + '&inst=' + institution + '&offset=' + index + '&limit=' + bulkSize;
                     if (apiKey) {
                         restURL = regionURL + '/primo/v1/pnxs?' + restURL + '&apikey=' + apiKey;
                     }else{
@@ -602,7 +602,10 @@ function _search() {
                             cache: false,
                             type: 'get',
                             dataType: 'json',
-                            url: restURL
+                            url: restURL,
+                            beforeSend: function(jqXHR, s){
+                                // removes auto injected header by ExL, prevents CORS error
+                            }
                         })
                         .done(function (data, event, xhr) {
                             if (typeof data == "string"){
@@ -610,7 +613,6 @@ function _search() {
                             } else {
                                 result = data;
                             }
-
                         })
                         .fail(function (data, event, xhr) {
                             console.log('error searching', e.message)
@@ -813,7 +815,8 @@ function _tab(record, i) {
             }
 
             var container = null;
-            var containerName = 'Container-' + tabName.trim().toLowerCase().replace(/tab$/g, '') + 'Tab';
+            var containerTmpName = (tabName.trim().charAt(0).toLowerCase() + tabName.trim().slice(1)).replace(/tab$/gi, '');
+            var containerName = 'Container-' + containerTmpName + 'Tab';
             c = record.find('*[class*="' + containerName + '"]');
 
             if (c.length > 0) {
@@ -1323,7 +1326,7 @@ jQuery.extend(jQuery.PRIMO, {
     }()),
     search: _search(),
     session: _getSessionData(),
-    version: "1.1.5",
+    version: "1.1.5.1",
     reload: function () {
         jQuery.PRIMO.session.reload();
     },

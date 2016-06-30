@@ -49,7 +49,8 @@ function _tab(record, i) {
             }
 
             var container = null;
-            var containerName = 'Container-' + tabName.trim().toLowerCase().replace(/tab$/g, '') + 'Tab';
+            var containerTmpName = (tabName.trim().charAt(0).toLowerCase() + tabName.trim().slice(1)).replace(/tab$/gi, '');
+            var containerName = 'Container-' + containerTmpName + 'Tab';
             c = record.find('*[class*="' + containerName + '"]');
 
             if (c.length > 0) {

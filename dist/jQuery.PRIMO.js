@@ -1018,6 +1018,7 @@ function _addTabReadyHandler(record, tab) {
         var tabUtils = tab.container[0].tabUtils;
         if (tabUtils) {
             var timeoutID = null;
+            var tabHandlerTimeout = 0;
             timeoutID = setInterval(function () {
                 if (tabUtils.isTabReady()) {
                     clearTimeout(timeoutID);
@@ -1026,7 +1027,13 @@ function _addTabReadyHandler(record, tab) {
                         tab.onTabReady(record, tab.container[0], tab);
                     }
                 } else {
-                    console.log("not ready tabReady for " + tab.id);
+                    if (tabHandlerTimeout > 10){
+                        clearTimeout(timeoutID);
+                        console.log("timing out tabReady for " + tab.id);
+                    } else {
+                        console.log("not ready tabReady for " + tab.id);
+                    }
+                    tabHandlerTimeout++;
                 }
             }, 500);
         }

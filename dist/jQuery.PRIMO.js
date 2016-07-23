@@ -254,15 +254,82 @@ function _query(){
         return queryToString();
     };
 
+    /**
+     * get scope values
+     * @method findScope
+     * @private
+     * @returns {String}
+     */
+    function findScope() {
+        var scope = parsedURL.lookup('scp.scps')[0];
+
+        if (scope === undefined) {
+            scope = '';
+        }
+
+        return scope;
+    }
+
+    /**
+     * get tab name
+     * @method findScope
+     * @private
+     * @returns {String}
+     */
+    function findTab(){
+        var tab = parsedURL.lookup('tab')[0];
+
+        if (tab === undefined) {
+            var tmpTab = $('#exlidSearchTabs li.EXLSearchTabSelected').find('a').attr('href').split('&').filter(function(d){return d.startsWith('tab')});
+            if (tmpTab && tmpTab.length > 0){
+                tab = tmpTab[0].replace(/^tab=/,'');
+            }
+        }
+
+        return tab;
+    }
+
+    /**
+     * get sort order
+     * @method findSortOrder
+     * @private
+     * @returns {String}
+     */
+    function findSortOrder() {
+        var sortedBy = parsedURL.lookup('srt')[0];
+
+        if (sortedBy === undefined){
+            sortedBy = '';
+        }
+
+        return sortedBy;
+    }
+
+    /**
+     * get the search type(mode)
+     * @method findType
+     * @private
+     * @returns {String}
+     */
+    function findType() {
+        var type = parsedURL.lookup('mode')[0];
+        if (type === undefined) {
+            type = 'Basic';
+        }
+
+        return type;
+    }
+
+
     return {
         isDeeplinkSearch: isDeeplinkSearch,
         count: searchRecordCount,
         step: searchStep,
         page: searchPage,
-        type: parsedURL.lookup('mode')[0],
-        tab: parsedURL.lookup('tab')[0],
-        sorted_by: parsedURL.lookup('srt')[0],
-        scope: parsedURL.lookup('scp.scps')[0],
+        type: findType(),
+        tab: findTab(),
+        sortedBy: findSortOrder(),
+        scope: findScope(),
         facets: facets,
         query: query
     }
@@ -1333,7 +1400,7 @@ jQuery.extend(jQuery.PRIMO, {
     }()),
     search: _search(),
     session: _getSessionData(),
-    version: "1.1.5.1",
+    version: "1.1.6",
     reload: function () {
         jQuery.PRIMO.session.reload();
     },

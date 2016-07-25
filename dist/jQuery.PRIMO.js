@@ -15,7 +15,11 @@
         parameters: {base_path: '/primo_library/libweb/jqp'}
     };
 
-
+if(!String.prototype.startsWith){
+    String.prototype.startsWith = function (str) {
+        return !this.indexOf(str);
+    }
+}
 function _facet() {
     var facets = [];
     try {

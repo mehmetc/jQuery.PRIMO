@@ -280,7 +280,7 @@ function _query(){
         var tab = parsedURL.lookup('tab')[0];
 
         if (tab === undefined) {
-            var tmpTab = $('#exlidSearchTabs li.EXLSearchTabSelected').find('a').attr('href').split('&').filter(function(d){return d.startsWith('tab')});
+            var tmpTab = $('#exlidSearchTabs li.EXLSearchTabSelected').find('a').attr('href').split('&').filter(function(d){return /^tab/.test(d)});
             if (tmpTab && tmpTab.length > 0){
                 tab = tmpTab[0].replace(/^tab=/,'');
             }

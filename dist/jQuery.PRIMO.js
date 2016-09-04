@@ -15,7 +15,11 @@
         parameters: {base_path: '/primo_library/libweb/jqp'}
     };
 
-
+if(!String.prototype.startsWith){
+    String.prototype.startsWith = function (str) {
+        return !this.indexOf(str);
+    }
+}
 function _facet() {
     var facets = [];
     try {
@@ -280,7 +284,8 @@ function _query(){
         var tab = parsedURL.lookup('tab')[0];
 
         if (tab === undefined) {
-            var tmpTab = $('#exlidSearchTabs li.EXLSearchTabSelected').find('a').attr('href').split('&').filter(function(d){return /^tab/.test(d)});
+            //var tmpTab = $('#exlidSearchTabs li.EXLSearchTabSelected').find('a').attr('href').split('&').filter(function(d){return /^tab/.test(d)});
+            var tmpTab = String( $('#exlidSearchTabs li.EXLSearchTabSelected').find('a').attr('href') ).split('&').filter(function(d){return /^tab/.test(d)});
             if (tmpTab && tmpTab.length > 0){
                 tab = tmpTab[0].replace(/^tab=/,'');
             }
@@ -1400,7 +1405,7 @@ jQuery.extend(jQuery.PRIMO, {
     }()),
     search: _search(),
     session: _getSessionData(),
-    version: "1.1.6",
+    version: "1.1.7",
     reload: function () {
         jQuery.PRIMO.session.reload();
     },

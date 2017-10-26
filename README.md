@@ -68,7 +68,7 @@ You can inject the script into your results page, for testing. This works best u
 Open the JavaScript console and paste the next line. You will not be able to use the more advanced functions 
 but it should give you an idea of what it can be used for.
 ```js
-    $.getScript('https://github.com/mehmetc/jQuery.PRIMO/raw/master/dist/jQuery.PRIMO.js')
+    $.getScript('https://cdn.rawgit.com/mehmetc/jQuery.PRIMO/4a091fc5/dist/jQuery.PRIMO.min.js')
 ``` 
 Browsers are getting stricter with every release. If you get strange errors just copy the complete source into your console.    
     
